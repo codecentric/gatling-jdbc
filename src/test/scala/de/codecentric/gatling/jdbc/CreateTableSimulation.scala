@@ -8,7 +8,7 @@ import io.gatling.core.Predef._
   */
 class CreateTableSimulation extends Simulation {
 
-  val jdbcConfig = jdbc.url("jdbc:h2:mem:test").username("sa").password("sa").driver("org.h2.Driver")
+  val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
 
   val testScenario = scenario("createTable").
     exec(jdbc("foo table").create().name("foo"))

@@ -21,8 +21,9 @@ case class JdbcCreateTableAction(tableName: Expression[String], statsEngine: Sta
     val validatedTableName = tableName.apply(session)
     validatedTableName match {
       case Success(name) =>
+        val query = s"CREATE TABLE $name(id INTEGER PRIMARY KEY)"
         DB autoCommit { implicit session =>
-          sql"CREATE TABLE ${name}(id INTEGER PRIMARY KEY)".execute().apply()
+          SQL(query).execute().apply()
         }
 
       case Failure(error) => throw new IllegalArgumentException(error)
@@ -30,6 +31,8 @@ case class JdbcCreateTableAction(tableName: Expression[String], statsEngine: Sta
     val end = TimeHelper.nowMillis
     val timing = ResponseTimings(start, end)
     statsEngine.logResponse(session, name, timing, OK, None, None)
+
+    next ! session
   }
 
 }
