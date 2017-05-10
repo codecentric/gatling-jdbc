@@ -5,14 +5,16 @@ import io.gatling.core.action.builder.ActionBuilder
 import io.gatling.core.session.Expression
 import io.gatling.core.structure.ScenarioContext
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcTableCreationActionBuilder(name: Expression[String]) extends ActionBuilder {
+case class JdbcTableCreationActionBuilder(name: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])]) extends ActionBuilder {
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcCreateTableAction(name, statsEngine, next)
+    JdbcCreateTableAction(name, columns, statsEngine, next)
   }
 
 }
