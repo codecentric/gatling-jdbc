@@ -1,5 +1,6 @@
 package de.codecentric.gatling.jdbc.action
 
+import de.codecentric.gatling.jdbc.builder.column.ColumnDefinition
 import io.gatling.commons.stats.OK
 import io.gatling.commons.util.TimeHelper
 import io.gatling.commons.validation.{Failure, Success}
@@ -15,7 +16,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcCreateTableAction(requestName: Expression[String], tableName: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
+case class JdbcCreateTableAction(requestName: Expression[String], tableName: Expression[String], columns: Seq[ColumnDefinition], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
 
   override def name: String = genName("jdbcCreateTable")
 
@@ -23,9 +24,9 @@ case class JdbcCreateTableAction(requestName: Expression[String], tableName: Exp
     val start = TimeHelper.nowMillis
     val columnStrings = columns.map(
       t => (
-        t._1.apply(session),
-        t._2.apply(session),
-        t._3.map(expr => expr.apply(session)).getOrElse(Success(""))))
+        t.name.name.apply(session),
+        t.dataType.dataType.apply(session),
+        t.columnConstraint.map(constr => constr.constraint).map(expr => expr.apply(session)).getOrElse(Success(""))))
       .map {
         case (Success(columnName), Success(dataType), Success(constraint)) => s"$columnName $dataType $constraint"
         case _ => throw new IllegalArgumentException
