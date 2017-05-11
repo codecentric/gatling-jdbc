@@ -15,7 +15,7 @@ class SelectTableSimulation extends Simulation {
   val testScenario = scenario("createTable").
     exec(jdbc("bar table")
       .create()
-      .name("bar")
+      .table("bar")
       .columns(
         column(
           name("abc"),

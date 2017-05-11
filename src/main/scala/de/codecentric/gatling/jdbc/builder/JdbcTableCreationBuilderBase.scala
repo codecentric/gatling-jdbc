@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 case class JdbcTableCreationBuilderBase(requestName: Expression[String]) {
 
-  def name(name: Expression[String]) = JdbcTableCreationColumnsStep(requestName, name)
+  def table(name: Expression[String]) = JdbcTableCreationColumnsStep(requestName, name)
 
 }
 

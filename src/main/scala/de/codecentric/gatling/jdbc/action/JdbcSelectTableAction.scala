@@ -2,7 +2,7 @@ package de.codecentric.gatling.jdbc.action
 
 import io.gatling.commons.stats.OK
 import io.gatling.commons.util.TimeHelper
-import io.gatling.commons.validation.{Failure, Success, Validation}
+import io.gatling.commons.validation.Success
 import io.gatling.core.action.{Action, ChainableAction}
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
