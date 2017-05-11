@@ -8,11 +8,10 @@ import io.gatling.core.structure.ScenarioContext
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcTableInsertionActionBuilder(requestName: Expression[String], tableName: Expression[String], values: Expression[String]) extends ActionBuilder {
+case class JdbcTableDroppingActionBuilder(requestName: Expression[String], tableName: Expression[String]) extends ActionBuilder {
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcInsertTableAction(requestName, tableName, values, statsEngine, next)
+    JdbcDropTableAction(requestName, tableName, statsEngine, next)
   }
-
 }

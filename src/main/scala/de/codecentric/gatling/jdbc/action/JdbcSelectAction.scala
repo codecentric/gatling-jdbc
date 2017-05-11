@@ -13,7 +13,7 @@ import scalikejdbc.{DB, SQL}
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcSelectTableAction(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Option[Expression[String]], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
+case class JdbcSelectAction(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Option[Expression[String]], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
 
   override def name: String = genName("jdbcSelectTable")
 

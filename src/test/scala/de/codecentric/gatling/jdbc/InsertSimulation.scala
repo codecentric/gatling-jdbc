@@ -8,7 +8,7 @@ import io.gatling.core.scenario.Simulation
 /**
   * Created by ronny on 10.05.17.
   */
-class SelectTableSimulation extends Simulation {
+class InsertSimulation extends Simulation {
 
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
 
@@ -29,12 +29,7 @@ class SelectTableSimulation extends Simulation {
       .into("bar")
       .values("${n}")
     )
-  }.pause(1).
-    exec(jdbc("selection")
-      .select("*")
-      .from("bar")
-      .where("abc=4")
-    )
+  }
 
 
   setUp(testScenario.inject(atOnceUsers(1))).protocols(jdbcConfig)
