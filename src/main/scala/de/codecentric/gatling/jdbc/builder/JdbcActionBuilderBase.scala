@@ -10,4 +10,6 @@ case class JdbcActionBuilderBase(requestName: Expression[String]) {
 
   def create() = JdbcTableCreationBuilderBase(requestName)
 
+  def insert() = JdbcTableInsertionBuilderBase(requestName)
+
 }
