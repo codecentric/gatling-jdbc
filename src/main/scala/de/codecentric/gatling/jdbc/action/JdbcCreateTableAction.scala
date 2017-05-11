@@ -7,6 +7,7 @@ import io.gatling.core.action.{Action, ChainableAction}
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
 import io.gatling.core.stats.message.ResponseTimings
+import io.gatling.core.util.NameGen
 import scalikejdbc._
 
 import scala.collection.mutable.ArrayBuffer
@@ -14,16 +15,21 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcCreateTableAction(tableName: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])], statsEngine: StatsEngine, next: Action) extends ChainableAction {
+case class JdbcCreateTableAction(requestName: Expression[String], tableName: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
 
-  override def name: String = "Create table action"
+  override def name: String = genName("jdbcCreateTable")
 
   override def execute(session: Session): Unit = {
     val start = TimeHelper.nowMillis
-    val columnStrings = columns.map(t => (t._1.apply(session), t._2.apply(session), t._3.map(expr => expr.apply(session)).getOrElse(Success("")))).map {
-      case (Success(columnName), Success(dataType), Success(constraint)) => s"$columnName $dataType $constraint"
-      case _ => throw new IllegalArgumentException
-    }.mkString(",")
+    val columnStrings = columns.map(
+      t => (
+        t._1.apply(session),
+        t._2.apply(session),
+        t._3.map(expr => expr.apply(session)).getOrElse(Success(""))))
+      .map {
+        case (Success(columnName), Success(dataType), Success(constraint)) => s"$columnName $dataType $constraint"
+        case _ => throw new IllegalArgumentException
+      }.mkString(",")
 
     val validatedTableName = tableName.apply(session)
     validatedTableName match {
@@ -37,8 +43,9 @@ case class JdbcCreateTableAction(tableName: Expression[String], columns: ArrayBu
     }
     val end = TimeHelper.nowMillis
     val timing = ResponseTimings(start, end)
-    statsEngine.logResponse(session, name, timing, OK, None, None)
-
+    requestName.apply(session).map { resolvedRequestName =>
+      statsEngine.logResponse(session, resolvedRequestName, timing, OK, None, None)
+    }
     next ! session
   }
 

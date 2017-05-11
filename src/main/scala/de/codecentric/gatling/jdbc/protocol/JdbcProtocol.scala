@@ -19,7 +19,7 @@ class JdbcProtocol(url: String, username: String, pwd: String, driver: String) e
 
 object JdbcProtocol {
 
-  val JdbcProtocolKey = new ProtocolKey {
+  val jdbcProtocolKey = new ProtocolKey {
 
     override type Protocol = JdbcProtocol
     override type Components = JdbcComponents

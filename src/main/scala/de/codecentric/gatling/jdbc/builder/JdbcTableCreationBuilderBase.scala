@@ -8,9 +8,9 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcTableCreationBuilderBase() {
+case class JdbcTableCreationBuilderBase(requestName: Expression[String]) {
 
-  def name(name: Expression[String]): JdbcTableCreationColumnNameStep = JdbcTableCreationBuilder(name)
+  def name(name: Expression[String]): JdbcTableCreationColumnNameStep = JdbcTableCreationBuilder(requestName, name)
 
 }
 
@@ -25,22 +25,21 @@ trait JdbcTableCreationColumnTypeStep {
 
 }
 
-trait JdbcTableCreationColumnConstraintStep {
+trait JdbcTableCreationColumnConstraintStep extends JdbcTableCreationColumnNameStep with JdbcTableCreationFinalStep {
 
   def constraint(constraint: Expression[String]): JdbcTableCreationAdditionalColumnStep
 
-  def noConstraint(): JdbcTableCreationAdditionalColumnStep
 }
 
-trait JdbcTableCreationAdditionalColumnStep {
+trait JdbcTableCreationAdditionalColumnStep extends JdbcTableCreationColumnNameStep with JdbcTableCreationFinalStep
 
-  def addColumn(name: Expression[String]): JdbcTableCreationColumnTypeStep
+trait JdbcTableCreationFinalStep {
 
   def create(): JdbcTableCreationActionBuilder
 
 }
 
-case class JdbcTableCreationBuilder(tableName: Expression[String]) extends JdbcTableCreationColumnNameStep with JdbcTableCreationColumnTypeStep with JdbcTableCreationColumnConstraintStep with JdbcTableCreationAdditionalColumnStep {
+case class JdbcTableCreationBuilder(requestName: Expression[String], tableName: Expression[String]) extends JdbcTableCreationColumnNameStep with JdbcTableCreationColumnTypeStep with JdbcTableCreationColumnConstraintStep with JdbcTableCreationAdditionalColumnStep {
 
   private val columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])] = ArrayBuffer.empty
 
@@ -48,10 +47,16 @@ case class JdbcTableCreationBuilder(tableName: Expression[String]) extends JdbcT
 
   private var newColumnDataType: Expression[String] = _
 
-  private var newColumnConstraint: Option[Expression[String]] = _
+  private var newColumnConstraint: Option[Expression[String]] = None
 
   override def column(name: Expression[String]): JdbcTableCreationColumnTypeStep = {
+    if (newColumnName != null && newColumnDataType != null) {
+      val tuple = (newColumnName, newColumnDataType, newColumnConstraint)
+      columns += tuple
+    }
     newColumnName = name
+    newColumnDataType = null
+    newColumnConstraint = None
     this
   }
 
@@ -65,25 +70,12 @@ case class JdbcTableCreationBuilder(tableName: Expression[String]) extends JdbcT
     this
   }
 
-  override def addColumn(name: Expression[String]): JdbcTableCreationColumnTypeStep = {
-    val tuple = (newColumnName, newColumnDataType, newColumnConstraint)
-    columns += tuple
-    newColumnName = name
-    newColumnDataType = null
-    newColumnConstraint = null
-    this
-  }
-
   override def create(): JdbcTableCreationActionBuilder = {
     val tuple = (newColumnName, newColumnDataType, newColumnConstraint)
     columns += tuple
-    JdbcTableCreationActionBuilder(tableName, columns)
+    JdbcTableCreationActionBuilder(requestName, tableName, columns)
   }
 
-  override def noConstraint(): JdbcTableCreationAdditionalColumnStep = {
-    newColumnConstraint = None
-    this
-  }
 }
 
 

@@ -10,11 +10,11 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcTableCreationActionBuilder(name: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])]) extends ActionBuilder {
+case class JdbcTableCreationActionBuilder(requestName: Expression[String], name: Expression[String], columns: ArrayBuffer[(Expression[String], Expression[String], Option[Expression[String]])]) extends ActionBuilder {
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcCreateTableAction(name, columns, statsEngine, next)
+    JdbcCreateTableAction(requestName, name, columns, statsEngine, next)
   }
 
 }
