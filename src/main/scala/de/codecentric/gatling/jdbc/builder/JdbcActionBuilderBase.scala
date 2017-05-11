@@ -8,6 +8,6 @@ import io.gatling.core.session.Expression
   */
 case class JdbcActionBuilderBase(requestName: Expression[String]) {
 
-  def create()(implicit configuration: GatlingConfiguration) = JdbcTableCreationBuilderBase(requestName)
+  def create() = JdbcTableCreationBuilderBase(requestName)
 
 }
