@@ -12,4 +12,6 @@ case class JdbcActionBuilderBase(requestName: Expression[String]) {
 
   def insert() = JdbcTableInsertionBuilderBase(requestName)
 
+  def select(what: Expression[String]) = JdbcTableSelectionBuilderBase(requestName, what)
+
 }
