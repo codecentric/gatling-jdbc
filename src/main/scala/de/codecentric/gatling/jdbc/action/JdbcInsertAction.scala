@@ -15,7 +15,7 @@ import scalikejdbc.{DB, SQL}
   */
 case class JdbcInsertAction(requestName: Expression[String], tableName: Expression[String], values: Expression[String], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
 
-  override def name: String = genName("jdbcCreateTable")
+  override def name: String = genName("jdbcInsert")
 
   override def execute(session: Session): Unit = {
     val start = TimeHelper.nowMillis

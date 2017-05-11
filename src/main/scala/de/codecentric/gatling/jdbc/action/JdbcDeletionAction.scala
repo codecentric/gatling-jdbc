@@ -13,24 +13,23 @@ import scalikejdbc.{DB, SQL}
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcSelectAction(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Option[Expression[String]], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
+case class JdbcDeletionAction(requestName: Expression[String], tableName: Expression[String], where: Option[Expression[String]], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
 
-  override def name: String = genName("jdbcSelect")
+  override def name: String = genName("jdbcDelete")
 
   override def execute(session: Session): Unit = {
     val start = TimeHelper.nowMillis
-    val validatedWhat = what.apply(session)
-    val validatedFrom = from.apply(session)
+    val validatedTableName = tableName.apply(session)
     val validatedWhere = where.map(w => w.apply(session))
 
-    val sqlString = (validatedWhat, validatedFrom, validatedWhere) match {
-      case (Success(whatString), Success(fromString), Some(Success(whereString))) => s"SELECT $whatString FROM $fromString WHERE $whereString"
-      case (Success(whatString), Success(fromString), None) => s"SELECT $whatString FROM $fromString"
+    val sqlString = (validatedTableName, validatedWhere) match {
+      case (Success(tableString), Some(Success(whereString))) => s"DELETE FROM $tableString WHERE $whereString"
+      case (Success(tableString), None) => s"DELETE FROM $tableString"
       case _ => throw new IllegalArgumentException
     }
 
     DB autoCommit { implicit session =>
-      SQL(sqlString).map(rs => rs.toMap()).list.apply()
+      SQL(sqlString).map(rs => rs.toMap()).execute().apply()
     }
 
     val end = TimeHelper.nowMillis
