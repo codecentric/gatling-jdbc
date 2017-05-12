@@ -9,7 +9,9 @@ lazy val root = project
         "io.gatling" % "gatling-test-framework" % "2.2.1",
         "org.scalikejdbc" %% "scalikejdbc"       % "2.5.2",
         "com.h2database"  %  "h2"                % "1.4.195",
-        "ch.qos.logback"  %  "logback-classic"   % "1.2.3"
+        "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
+        "mysql" % "mysql-connector-java" % "5.1.6",
+        "org.postgresql" % "postgresql" % "42.1.1"
     )
   ).enablePlugins(GatlingPlugin)
 
