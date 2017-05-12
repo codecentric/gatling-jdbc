@@ -1,11 +1,9 @@
 package de.codecentric.gatling.jdbc.action
 
-import de.codecentric.gatling.jdbc.builder.column.ColumnHelper.{column, constraint, dataType, name}
 import io.gatling.commons.stats.{KO, OK}
 import io.gatling.core.stats.writer.ResponseMessage
 import org.scalatest.Matchers.equal
 import org.scalatest.Matchers._
-import org.scalatest._
 import io.gatling.core.Predef._
 import io.gatling.core.action.Action
 import io.gatling.core.session.Session
@@ -79,13 +77,13 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
   it should "throw an IAE when the table name cannot be resolved" in {
     val action = JdbcDeletionAction("request", "${what}", Some("bar = 1"), statsEngine, next)
 
-    an[IllegalArgumentException] should be thrownBy (action.execute(session))
+    an[IllegalArgumentException] should be thrownBy action.execute(session)
   }
 
   it should "throw an IAE when the where clause cannot be resolved" in {
     val action = JdbcDeletionAction("request", "what", Some("${bar} = 1"), statsEngine, next)
 
-    an[IllegalArgumentException] should be thrownBy (action.execute(session))
+    an[IllegalArgumentException] should be thrownBy action.execute(session)
   }
 
   it should "pass the session to the next action" in {
