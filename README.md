@@ -1,6 +1,8 @@
 # gatling-jdbc
 JDBC support for Gatling
 
+[![Build Status](https://travis-ci.org/rbraeunlich/gatling-jdbc.svg?branch=master)](https://travis-ci.org/rbraeunlich/gatling-jdbc)
+
 The JDBC extension for Gatling was originally created to accompany a blog post that shows how to extend Gatling.
 Currently, five SQL operations are being supported. See below for the usage.
 
