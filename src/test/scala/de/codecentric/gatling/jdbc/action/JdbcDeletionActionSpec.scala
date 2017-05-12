@@ -1,0 +1,108 @@
+package de.codecentric.gatling.jdbc.action
+
+import de.codecentric.gatling.jdbc.builder.column.ColumnHelper.{column, constraint, dataType, name}
+import io.gatling.commons.stats.{KO, OK}
+import io.gatling.core.stats.writer.ResponseMessage
+import org.scalatest.Matchers.equal
+import org.scalatest.Matchers._
+import org.scalatest._
+import io.gatling.core.Predef._
+import io.gatling.core.action.Action
+import io.gatling.core.session.Session
+import scalikejdbc.DB
+import scalikejdbc._
+
+/**
+  * Created by ronny on 12.05.17.
+  */
+class JdbcDeletionActionSpec extends JdbcActionSpec {
+
+  "JdbcDeletionAction" should "use the request name in the log message" in {
+    val requestName = "name"
+    val action = JdbcDeletionAction(requestName, "table", None, statsEngine, next)
+
+    action.execute(session)
+
+    statsEngine.dataWriterMsg should have length 1
+    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
+  }
+
+  it should "delete the data specied by the where clause" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE foo(bar INTEGER ); INSERT INTO foo VALUES (1);INSERT INTO foo VALUES (2)""".execute().apply()
+    }
+    val action = JdbcDeletionAction("request", "foo", Some("bar = 2"), statsEngine, next)
+
+    action.execute(session)
+
+    val result = DB readOnly { implicit session =>
+      sql"""SELECT COUNT(*) FROM foo""".map(rs => rs.int(1)).single().apply()
+    }
+    result should contain(1)
+  }
+
+  it should "delete all data when no where specified" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE bar(foo INTEGER ); INSERT INTO bar VALUES (1);INSERT INTO bar VALUES (2)""".execute().apply()
+    }
+    val action = JdbcDeletionAction("request", "bar", None, statsEngine, next)
+
+    action.execute(session)
+
+    val result = DB readOnly { implicit session =>
+      sql"""SELECT COUNT(*) FROM bar""".map(rs => rs.int(1)).single().apply()
+    }
+    result should contain(0)
+  }
+
+  it should "log an OK value when being successful" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE table_1(bar INTEGER ); INSERT INTO table_1 VALUES (1);""".execute().apply()
+    }
+    val action = JdbcDeletionAction("request", "table_1", Some("bar = 1"), statsEngine, next)
+
+    action.execute(session)
+
+    statsEngine.dataWriterMsg should have length 1
+    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
+  }
+
+  it should "log an KO value when being unsuccessful" in {
+    val action = JdbcDeletionAction("request", "non_existing", Some("bar = 1"), statsEngine, next)
+
+    action.execute(session)
+
+    statsEngine.dataWriterMsg should have length 1
+    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
+  }
+
+  it should "throw an IAE when the table name cannot be resolved" in {
+    val action = JdbcDeletionAction("request", "${what}", Some("bar = 1"), statsEngine, next)
+
+    an[IllegalArgumentException] should be thrownBy (action.execute(session))
+  }
+
+  it should "throw an IAE when the where clause cannot be resolved" in {
+    val action = JdbcDeletionAction("request", "what", Some("${bar} = 1"), statsEngine, next)
+
+    an[IllegalArgumentException] should be thrownBy (action.execute(session))
+  }
+
+  it should "pass the session to the next action" in {
+    val nextAction = new Action {
+      var called = false
+
+      override def execute(s: Session): Unit = if(s == session) called = true
+
+      override def name: String = "nextAction"
+    }
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE what(nothing INTEGER )""".execute().apply()
+    }
+    val action = JdbcDeletionAction("request", "what", None, statsEngine, nextAction)
+
+    action.execute(session)
+
+    nextAction.called should be(true)
+  }
+}
