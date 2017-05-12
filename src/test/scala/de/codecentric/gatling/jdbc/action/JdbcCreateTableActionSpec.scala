@@ -1,42 +1,19 @@
 package de.codecentric.gatling.jdbc.action
 
-import de.codecentric.gatling.jdbc.mock.MockStatsEngine
+import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
+import io.gatling.commons.stats.{KO, OK}
+import io.gatling.core.Predef._
 import io.gatling.core.action.Action
 import io.gatling.core.session.Session
-import org.scalatest.{BeforeAndAfter, FlatSpec}
-import io.gatling.core.Predef._
-import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.stats.writer.ResponseMessage
+import org.scalatest.Matchers._
 import org.scalatest._
-import Matchers._
-import io.gatling.commons.stats.{KO, OK}
 import scalikejdbc._
 
 /**
   * Created by ronny on 12.05.17.
   */
-class JdbcCreateTableActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll {
-
-  val session = Session("scenario", 0)
-  val next = new Action {
-    override def name: String = "mockAction"
-
-    override def execute(session: Session): Unit = {}
-  }
-  val statsEngine = new MockStatsEngine
-
-  override def beforeAll(): Unit = {
-    Class.forName("org.h2.Driver")
-    ConnectionPool.singleton("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE", "sa", "sa")
-  }
-
-  before {
-    statsEngine.dataWriterMsg = List()
-  }
-
-  override def afterAll(): Unit = {
-    ConnectionPool.closeAll()
-  }
+class JdbcCreateTableActionSpec extends JdbcActionSpec {
 
   "JdbcCreateTableAction" should "use the request name in the log message" in {
     val requestName = "name"
