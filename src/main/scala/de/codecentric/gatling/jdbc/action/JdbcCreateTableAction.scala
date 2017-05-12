@@ -1,9 +1,9 @@
 package de.codecentric.gatling.jdbc.action
 
 import de.codecentric.gatling.jdbc.builder.column.ColumnDefinition
-import io.gatling.commons.stats.OK
+import io.gatling.commons.stats.{KO, OK, Status}
 import io.gatling.commons.util.TimeHelper
-import io.gatling.commons.validation.{Failure, Success}
+import io.gatling.commons.validation.{Failure, Success, Validation}
 import io.gatling.core.action.{Action, ChainableAction}
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
@@ -12,11 +12,16 @@ import io.gatling.core.util.NameGen
 import scalikejdbc._
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 /**
   * Created by ronny on 10.05.17.
   */
-case class JdbcCreateTableAction(requestName: Expression[String], tableName: Expression[String], columns: Seq[ColumnDefinition], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
+case class JdbcCreateTableAction(requestName: Expression[String],
+                                  tableName: Expression[String],
+                                  columns: Seq[ColumnDefinition],
+                                  statsEngine: StatsEngine,
+                                  next: Action) extends JdbcAction {
 
   override def name: String = genName("jdbcCreateTable")
 
@@ -36,16 +41,12 @@ case class JdbcCreateTableAction(requestName: Expression[String], tableName: Exp
     validatedTableName match {
       case Success(name) =>
         val query = s"CREATE TABLE $name($columnStrings)"
-        DB autoCommit { implicit session =>
+        val tried = Try(DB autoCommit { implicit session =>
           SQL(query).execute().apply()
-        }
+        })
+        log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
 
       case Failure(error) => throw new IllegalArgumentException(error)
-    }
-    val end = TimeHelper.nowMillis
-    val timing = ResponseTimings(start, end)
-    requestName.apply(session).map { resolvedRequestName =>
-      statsEngine.logResponse(session, resolvedRequestName, timing, OK, None, None)
     }
     next ! session
   }

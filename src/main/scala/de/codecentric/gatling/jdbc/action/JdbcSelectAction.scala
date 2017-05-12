@@ -10,10 +10,17 @@ import io.gatling.core.stats.message.ResponseTimings
 import io.gatling.core.util.NameGen
 import scalikejdbc.{DB, SQL}
 
+import scala.util.Try
+
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcSelectAction(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Option[Expression[String]], statsEngine: StatsEngine, next: Action) extends ChainableAction with NameGen {
+case class JdbcSelectAction(requestName: Expression[String],
+                            what: Expression[String],
+                            from: Expression[String],
+                            where: Option[Expression[String]],
+                            statsEngine: StatsEngine,
+                            next: Action) extends JdbcAction {
 
   override def name: String = genName("jdbcSelect")
 
@@ -29,15 +36,12 @@ case class JdbcSelectAction(requestName: Expression[String], what: Expression[St
       case _ => throw new IllegalArgumentException
     }
 
-    DB autoCommit { implicit session =>
+    val tried = Try(DB autoCommit { implicit session =>
       SQL(sqlString).map(rs => rs.toMap()).list.apply()
-    }
+    })
 
-    val end = TimeHelper.nowMillis
-    val timing = ResponseTimings(start, end)
-    requestName.apply(session).map { resolvedRequestName =>
-      statsEngine.logResponse(session, resolvedRequestName, timing, OK, None, None)
-    }
+    log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+    
     next ! session
   }
 

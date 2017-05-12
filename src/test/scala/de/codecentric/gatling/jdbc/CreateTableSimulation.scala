@@ -12,7 +12,7 @@ class CreateTableSimulation extends Simulation {
 
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
 
-  val testScenario = scenario("createTable").
+  val testScenario = scenario("createTable").repeat(2){
     exec(jdbc("bar table")
       .create()
       .table("bar")
@@ -26,8 +26,8 @@ class CreateTableSimulation extends Simulation {
           name("ac"),
           dataType("INTEGER")
         )
-      )
-    )
+      ))
+  }
 
 
   setUp(testScenario.inject(atOnceUsers(1))).protocols(jdbcConfig)
