@@ -50,19 +50,19 @@ scenario("createTable").
 
 Insertion is done via `jdbc().insert()`. For where to insert, two options are possible. Suppose you have the table from the example above. You can insert the values either by relying on the indices:
 ```
-    exec(jdbc("insertion")
-      .insert()
-      .into("bar")
-      .values("${n}, ${n}")
-    )
+exec(jdbc("insertion")
+  .insert()
+  .into("bar")
+  .values("${n}, ${n}")
+)
 ```
 or by using the column names:
 ```
-    exec(jdbc("insertion")
-      .insert()
-      .into("bar (abc, ac)")
-      .values("${n}, ${n}")
-    )
+exec(jdbc("insertion")
+  .insert()
+  .into("bar (abc, ac)")
+  .values("${n}, ${n}")
+)
 ```
 
 ## SELECT
@@ -70,18 +70,18 @@ or by using the column names:
 In contrast to the previous operations, select directly requires a parameter and is called via `jdbc().select(<what>)'. The intention is to closely resemble the SQL syntax.
 Using `where()` is optional for SELECT. Therefore, the following two ways are both valid:
 ```
-    exec(jdbc("selection")
-      .select("*")
-      .from("bar")
-    )
+exec(jdbc("selection")
+  .select("*")
+  .from("bar")
+)
 ```
 and
 ```
-    exec(jdbc("selection")
-      .select("*")
-      .from("bar")
-      .where("abc=4")
-    )
+exec(jdbc("selection")
+  .select("*")
+  .from("bar")
+  .where("abc=4")
+)
 ```
 Of course, as parameter to `select()`, every column or combination of columns can be used, as with basic SQL.
 
@@ -91,16 +91,18 @@ Deletion starts from `jdbc().delete()`. Here, the where clause is optional again
 ```
 repeat(5, "n"){
     exec(jdbc("deletion")
-    .delete()
-    .from("bar")
-    .where("abc=${n}")  
- )
+        .delete()
+        .from("bar")
+        .where("abc=${n}")  
+    )
+}
 ```
 Alternatively, in order to delete everything:
 ```
-    exec(jdbc("deletion")
+exec(jdbc("deletion")
     .delete()
     .from("bar")
+)
 ```
 Please be careful, since no additional validation is being performed and you might lose some data.
 
