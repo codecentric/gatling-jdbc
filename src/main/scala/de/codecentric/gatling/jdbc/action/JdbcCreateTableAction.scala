@@ -1,17 +1,13 @@
 package de.codecentric.gatling.jdbc.action
 
 import de.codecentric.gatling.jdbc.builder.column.ColumnDefinition
-import io.gatling.commons.stats.{KO, OK, Status}
 import io.gatling.commons.util.TimeHelper
-import io.gatling.commons.validation.{Failure, Success, Validation}
-import io.gatling.core.action.{Action, ChainableAction}
+import io.gatling.commons.validation.{Failure, Success}
+import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
-import io.gatling.core.stats.message.ResponseTimings
-import io.gatling.core.util.NameGen
 import scalikejdbc._
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 
 /**

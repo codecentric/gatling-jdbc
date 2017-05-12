@@ -41,7 +41,7 @@ case class JdbcSelectAction(requestName: Expression[String],
     })
 
     log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
-    
+
     next ! session
   }
 
