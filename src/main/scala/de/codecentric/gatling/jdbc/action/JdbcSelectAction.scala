@@ -1,7 +1,5 @@
 package de.codecentric.gatling.jdbc.action
 
-import java.sql.ResultSet
-
 import de.codecentric.gatling.jdbc.JdbcCheck
 import io.gatling.commons.stats.KO
 import io.gatling.commons.util.TimeHelper
@@ -13,7 +11,7 @@ import io.gatling.core.stats.StatsEngine
 import io.gatling.core.stats.message.ResponseTimings
 import scalikejdbc.{DB, SQL}
 
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 /**
   * Created by ronny on 11.05.17.
@@ -41,7 +39,7 @@ case class JdbcSelectAction(requestName: Expression[String],
     }
 
     val tried = Try(DB autoCommit { implicit session =>
-      SQL(sqlString).map(rs => rs.underlying).single().apply()
+      SQL(sqlString).map(rs => rs.toMap()).toList().apply()
     })
 
     if (tried.isSuccess) {
@@ -52,8 +50,8 @@ case class JdbcSelectAction(requestName: Expression[String],
     }
   }
 
-  private def performChecks(session: Session, start: Long, tried: Option[ResultSet]) = {
-    val (modifySession, error) = Check.check(tried.get, session, checks)
+  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]) = {
+    val (modifySession, error) = Check.check(tried, session, checks)
     val newSession = modifySession(session)
     error match {
       case Some(failure) =>

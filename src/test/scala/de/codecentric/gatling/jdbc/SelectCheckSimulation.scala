@@ -38,7 +38,7 @@ class SelectCheckSimulation extends Simulation {
       .select("*")
       .from("bar")
       .where("abc=4")
-      .check(simpleCheck(resultSet => resultSet.getInt("foo") == 5))
+      .check(simpleCheck(result => result.head("FOO") == 4))
     )
 
 

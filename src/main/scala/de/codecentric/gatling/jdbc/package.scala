@@ -1,7 +1,5 @@
 package de.codecentric.gatling
 
-import java.sql.ResultSet
-
 import io.gatling.core.check.Check
 
 /**
@@ -9,6 +7,6 @@ import io.gatling.core.check.Check
   */
 package object jdbc {
 
-  type JdbcCheck = Check[ResultSet]
+  type JdbcCheck = Check[List[Map[String, Any]]]
 
 }
