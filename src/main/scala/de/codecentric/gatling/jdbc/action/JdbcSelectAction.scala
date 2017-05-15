@@ -1,16 +1,19 @@
 package de.codecentric.gatling.jdbc.action
 
-import io.gatling.commons.stats.OK
+import java.sql.ResultSet
+
+import de.codecentric.gatling.jdbc.JdbcCheck
+import io.gatling.commons.stats.KO
 import io.gatling.commons.util.TimeHelper
 import io.gatling.commons.validation.Success
-import io.gatling.core.action.{Action, ChainableAction}
+import io.gatling.core.action.Action
+import io.gatling.core.check.Check
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
 import io.gatling.core.stats.message.ResponseTimings
-import io.gatling.core.util.NameGen
 import scalikejdbc.{DB, SQL}
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 /**
   * Created by ronny on 11.05.17.
@@ -19,6 +22,7 @@ case class JdbcSelectAction(requestName: Expression[String],
                             what: Expression[String],
                             from: Expression[String],
                             where: Option[Expression[String]],
+                            checks: List[JdbcCheck],
                             statsEngine: StatsEngine,
                             next: Action) extends JdbcAction {
 
@@ -37,12 +41,29 @@ case class JdbcSelectAction(requestName: Expression[String],
     }
 
     val tried = Try(DB autoCommit { implicit session =>
-      SQL(sqlString).map(rs => rs.toMap()).list.apply()
+      SQL(sqlString).map(rs => rs.underlying).single().apply()
     })
 
-    log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
-
-    next ! session
+    if (tried.isSuccess) {
+      performChecks(session, start, tried.get)
+    } else {
+      log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+      next ! session
+    }
   }
 
+  private def performChecks(session: Session, start: Long, tried: Option[ResultSet]) = {
+    val (modifySession, error) = Check.check(tried.get, session, checks)
+    val newSession = modifySession(session)
+    error match {
+      case Some(failure) =>
+        requestName.apply(session).map { resolvedRequestName =>
+          statsEngine.logResponse(session, resolvedRequestName, ResponseTimings(start, TimeHelper.nowMillis), KO, None, None)
+        }
+        next ! newSession.markAsFailed
+      case _ =>
+        log(start, TimeHelper.nowMillis, scala.util.Success(""), requestName, session, statsEngine)
+        next ! newSession
+    }
+  }
 }
