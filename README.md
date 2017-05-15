@@ -114,6 +114,20 @@ Dropping the "bar" table from the first example can be done in the following way
 jdbc("drop bar table").drop().table("bar")
 ```
 
+## Checks
+
+Currently, checks are only implemented for SELECT. When importing `de.codecentric.gatling.jdbc.Predef._` the `simpleCheck` method is already provided. This method takes a function from `List[Map[String, Any]]` to `Boolean`.
+Each element in the list represents a row and the map the individual columns. Checks are simply appended to the selection, e.g.:
+```
+exec(jdbc("selection")
+  .select("*")
+  .from("bar")
+  .where("abc=4")
+  .check(simpleCheck(result => result.head("FOO") == 4))
+)
+```
+A SELECT without a WHERE clause can also be validated with a `simpleCheck`.
+
 ## Final
 
 Covering all SQL operations is a lot of work and some special commands might not be required for performance tests.
