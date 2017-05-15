@@ -17,3 +17,5 @@ lazy val root = project
   ).enablePlugins(GatlingPlugin)
 
 publishArtifact in(Test, packageBin) := true
+
+parallelExecution in Test := false

@@ -87,13 +87,7 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
   }
 
   it should "pass the session to the next action" in {
-    val nextAction = new Action {
-      var called = false
-
-      override def execute(s: Session): Unit = if(s == session) called = true
-
-      override def name: String = "nextAction"
-    }
+    val nextAction = NextAction(session)
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE what(nothing INTEGER )""".execute().apply()
     }
