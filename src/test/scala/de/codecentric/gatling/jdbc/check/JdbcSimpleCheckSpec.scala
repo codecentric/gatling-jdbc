@@ -20,14 +20,14 @@ class JdbcSimpleCheckSpec extends FlatSpec with Matchers {
     val check = JdbcSimpleCheck(_ => true)
     val result = check.check(List.empty, session)
 
-    result shouldBe a[Success[CheckResult]]
+    result should equal(CheckResult.NoopCheckResultSuccess)
   }
 
   it should "log a failure if the function returns false" in {
     val check = JdbcSimpleCheck(_ => false)
     val result = check.check(List.empty, session)
 
-    result shouldBe a[Failure]
+    result should equal(Failure("JDBC check failed"))
   }
 
   it should "provide the response list to the function" in {
@@ -35,6 +35,6 @@ class JdbcSimpleCheckSpec extends FlatSpec with Matchers {
     val check = JdbcSimpleCheck(response => response eq list)
     val result = check.check(list, session)
 
-    result shouldBe a[Success[CheckResult]]
+    result should equal(CheckResult.NoopCheckResultSuccess)
   }
 }
