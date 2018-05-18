@@ -1,7 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
 import io.gatling.commons.stats.OK
-import io.gatling.commons.util.TimeHelper
+import io.gatling.commons.util.ClockSingleton.nowMillis
 import io.gatling.commons.validation.{Failure, Success, Validation}
 import io.gatling.core.action.{Action, ChainableAction}
 import io.gatling.core.session.{Expression, Session}
@@ -24,7 +24,7 @@ case class JdbcInsertAction(requestName: Expression[String],
   override def name: String = genName("jdbcInsert")
 
   override def execute(session: Session): Unit = {
-    val start = TimeHelper.nowMillis
+    val start = nowMillis
     val validatedTableName = tableName.apply(session)
     val validatedValues = values.apply(session)
     val sqlString: Validation[String] = for {
@@ -37,7 +37,7 @@ case class JdbcInsertAction(requestName: Expression[String],
         val tried = Try(DB autoCommit { implicit session =>
           SQL(s).execute().apply()
         })
-        log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+        log(start, nowMillis, tried, requestName, session, statsEngine)
 
       case Failure(error) => throw new IllegalArgumentException(error)
     }

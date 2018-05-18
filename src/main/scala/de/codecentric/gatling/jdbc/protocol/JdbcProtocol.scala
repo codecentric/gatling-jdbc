@@ -26,7 +26,7 @@ object JdbcProtocol {
 
     override def protocolClass: Class[protocol.Protocol] = classOf[JdbcProtocol].asInstanceOf[Class[io.gatling.core.protocol.Protocol]]
 
-    override def defaultValue(configuration: GatlingConfiguration): JdbcProtocol =
+    override def defaultProtocolValue(configuration: GatlingConfiguration): JdbcProtocol =
       throw new IllegalStateException("Can't provide a default value for JdbcProtocol")
 
     override def newComponents(system: ActorSystem, coreComponents: CoreComponents): (JdbcProtocol) => JdbcComponents = {

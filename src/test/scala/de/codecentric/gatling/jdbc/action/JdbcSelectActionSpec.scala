@@ -68,9 +68,9 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
 
   it should "log a KO value if a check fails" in {
     DB autoCommit { implicit session =>
-      sql"""CREATE TABLE check(id INTEGER PRIMARY KEY )""".execute().apply()
+      sql"""CREATE TABLE checkTable(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "CHECK", None, List(simpleCheck(_ => false)), statsEngine, next)
+    val action = JdbcSelectAction("request", "*", "CHECKTABLE", None, List(simpleCheck(_ => false)), statsEngine, next)
 
     action.execute(session)
 

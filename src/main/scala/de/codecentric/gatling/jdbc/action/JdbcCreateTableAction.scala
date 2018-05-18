@@ -1,7 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
 import de.codecentric.gatling.jdbc.builder.column.ColumnDefinition
-import io.gatling.commons.util.TimeHelper
+import io.gatling.commons.util.ClockSingleton.nowMillis
 import io.gatling.commons.validation.{Failure, Success}
 import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
@@ -22,7 +22,7 @@ case class JdbcCreateTableAction(requestName: Expression[String],
   override def name: String = genName("jdbcCreateTable")
 
   override def execute(session: Session): Unit = {
-    val start = TimeHelper.nowMillis
+    val start = nowMillis
     val columnStrings = columns.map(
       t => (
         t.name.name.apply(session),
@@ -40,7 +40,7 @@ case class JdbcCreateTableAction(requestName: Expression[String],
         val tried = Try(DB autoCommit { implicit session =>
           SQL(query).execute().apply()
         })
-        log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+        log(start, nowMillis, tried, requestName, session, statsEngine)
 
       case Failure(error) => throw new IllegalArgumentException(error)
     }

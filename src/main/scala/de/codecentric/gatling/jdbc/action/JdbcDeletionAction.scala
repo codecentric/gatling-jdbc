@@ -1,13 +1,10 @@
 package de.codecentric.gatling.jdbc.action
 
-import io.gatling.commons.stats.OK
-import io.gatling.commons.util.TimeHelper
+import io.gatling.commons.util.ClockSingleton.nowMillis
 import io.gatling.commons.validation.Success
-import io.gatling.core.action.{Action, ChainableAction}
+import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
-import io.gatling.core.stats.message.ResponseTimings
-import io.gatling.core.util.NameGen
 import scalikejdbc.{DB, SQL}
 
 import scala.util.Try
@@ -24,7 +21,7 @@ case class JdbcDeletionAction(requestName: Expression[String],
   override def name: String = genName("jdbcDelete")
 
   override def execute(session: Session): Unit = {
-    val start = TimeHelper.nowMillis
+    val start = nowMillis
     val validatedTableName = tableName.apply(session)
     val validatedWhere = where.map(w => w.apply(session))
 
@@ -38,7 +35,7 @@ case class JdbcDeletionAction(requestName: Expression[String],
       SQL(sqlString).map(rs => rs.toMap()).execute().apply()
     })
 
-    log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+    log(start, nowMillis, tried, requestName, session, statsEngine)
 
     next ! session
   }

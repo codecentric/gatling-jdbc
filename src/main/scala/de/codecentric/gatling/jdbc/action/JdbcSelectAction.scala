@@ -2,7 +2,7 @@ package de.codecentric.gatling.jdbc.action
 
 import de.codecentric.gatling.jdbc.JdbcCheck
 import io.gatling.commons.stats.KO
-import io.gatling.commons.util.TimeHelper
+import io.gatling.commons.util.ClockSingleton.nowMillis
 import io.gatling.commons.validation.Success
 import io.gatling.core.action.Action
 import io.gatling.core.check.Check
@@ -27,7 +27,7 @@ case class JdbcSelectAction(requestName: Expression[String],
   override def name: String = genName("jdbcSelect")
 
   override def execute(session: Session): Unit = {
-    val start = TimeHelper.nowMillis
+    val start = nowMillis
     val validatedWhat = what.apply(session)
     val validatedFrom = from.apply(session)
     val validatedWhere = where.map(w => w.apply(session))
@@ -45,7 +45,7 @@ case class JdbcSelectAction(requestName: Expression[String],
     if (tried.isSuccess) {
       performChecks(session, start, tried.get)
     } else {
-      log(start, TimeHelper.nowMillis, tried, requestName, session, statsEngine)
+      log(start, nowMillis, tried, requestName, session, statsEngine)
       next ! session
     }
   }
@@ -56,11 +56,11 @@ case class JdbcSelectAction(requestName: Expression[String],
     error match {
       case Some(failure) =>
         requestName.apply(session).map { resolvedRequestName =>
-          statsEngine.logResponse(session, resolvedRequestName, ResponseTimings(start, TimeHelper.nowMillis), KO, None, None)
+          statsEngine.logResponse(session, resolvedRequestName, ResponseTimings(start, nowMillis), KO, None, None)
         }
         next ! newSession.markAsFailed
       case _ =>
-        log(start, TimeHelper.nowMillis, scala.util.Success(""), requestName, session, statsEngine)
+        log(start, nowMillis, scala.util.Success(""), requestName, session, statsEngine)
         next ! newSession
     }
   }
