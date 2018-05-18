@@ -31,6 +31,8 @@ publishTo := Some(
     Opts.resolver.sonatypeStaging
 )
 
-publishArtifact in(Test, packageBin) := true
+pomIncludeRepository := { _ => false }
+publishArtifact in Test := false
+publishMavenStyle := true
 
 parallelExecution in Test := false
