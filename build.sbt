@@ -14,8 +14,8 @@ libraryDependencies ++= Seq(
 )
 enablePlugins(GatlingPlugin)
 
-homepage := Some(url("https://github.com/rbraeunlich/gatling-jdbc"))
-scmInfo := Some(ScmInfo(url("https://github.com/rbraeunlich/gatling-jdbc"), "git@github.com:rbraeunlich/gatling-jdbc.git"))
+homepage := Some(url("https://github.com/codecentric/gatling-jdbc"))
+scmInfo := Some(ScmInfo(url("https://github.com/codecentric/gatling-jdbc"), "git@github.com:codecentric/gatling-jdbc.git"))
 developers := List(Developer("rbraeunlich",
   "Ronny Bräunlich",
   "ronny.braeunlich@codecentric.de",
