@@ -1,7 +1,7 @@
 organization := "de.codecentric"
 name := "gatling-jdbc"
 scalaVersion := "2.12.6"
-version := "1.0.0"
+version := "1.0.1-SNAPSHOT"
 libraryDependencies ++= Seq(
   "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.3.1",
   "io.gatling" % "gatling-test-framework" % "2.3.1",

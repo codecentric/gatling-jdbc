@@ -141,3 +141,4 @@ Firstly, you gotta have in your home `.sbt/1.0/sonatype.sbt` configured to conta
 Secondly, open the sbt shell an perform the following steps:
 1. `set pgpSecretRing := file("/home/<user>/.sbt/gpg/secring.asc")` or where ever it is
 2. `publishSigned`
+3. `sonatypeRelease`
