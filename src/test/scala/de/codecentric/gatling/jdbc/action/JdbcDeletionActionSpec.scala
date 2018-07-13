@@ -31,10 +31,12 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE foo(bar INTEGER ); INSERT INTO foo VALUES (1);INSERT INTO foo VALUES (2)""".execute().apply()
     }
-    val action = JdbcDeletionAction("request", "foo", Some("bar = 2"), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDeletionAction("request", "foo", Some("bar = 2"), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     val result = DB readOnly { implicit session =>
       sql"""SELECT COUNT(*) FROM foo""".map(rs => rs.int(1)).single().apply()
     }
@@ -45,10 +47,12 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE bar(foo INTEGER ); INSERT INTO bar VALUES (1);INSERT INTO bar VALUES (2)""".execute().apply()
     }
-    val action = JdbcDeletionAction("request", "bar", None, statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDeletionAction("request", "bar", None, statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     val result = DB readOnly { implicit session =>
       sql"""SELECT COUNT(*) FROM bar""".map(rs => rs.int(1)).single().apply()
     }

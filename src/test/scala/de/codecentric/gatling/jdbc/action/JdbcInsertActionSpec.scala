@@ -26,10 +26,12 @@ class JdbcInsertActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE insert_me(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcInsertAction("insert", "INSERT_ME", "42", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcInsertAction("insert", "INSERT_ME", "42", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     val result = DB readOnly { implicit session =>
       sql"""SELECT * FROM INSERT_ME WHERE id = 42 """.map(rs => rs.toMap()).single().apply()
     }
