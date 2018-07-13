@@ -17,10 +17,12 @@ class JdbcCreateTableActionSpec extends JdbcActionSpec {
 
   "JdbcCreateTableAction" should "use the request name in the log message" in {
     val requestName = "name"
-    val action = JdbcCreateTableAction(requestName, "table", Seq(column(name("foo"), dataType("INTEGER"))), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcCreateTableAction(requestName, "table", Seq(column(name("foo"), dataType("INTEGER"))), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
@@ -37,20 +39,24 @@ class JdbcCreateTableActionSpec extends JdbcActionSpec {
   }
 
   it should "log an OK message when successfully creating the table" in {
-    val action = JdbcCreateTableAction("request", "ok_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcCreateTableAction("request", "ok_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log a KO message if an error occurs" in {
+    val latchAction = BlockingLatchAction()
     val action = JdbcCreateTableAction("request", "ko_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), statsEngine, next)
 
     action.execute(session)
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 2
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -85,6 +91,7 @@ class JdbcCreateTableActionSpec extends JdbcActionSpec {
 
     action.execute(session)
 
+    waitForLatch(nextAction)
     nextAction.called should be(true)
   }
 

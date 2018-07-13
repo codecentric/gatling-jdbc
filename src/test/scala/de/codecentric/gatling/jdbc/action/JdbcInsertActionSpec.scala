@@ -12,10 +12,12 @@ class JdbcInsertActionSpec extends JdbcActionSpec {
 
   "JdbcInsertAction" should "use the request name in the log message" in {
     val requestName = "request"
-    val action = JdbcInsertAction(requestName, "table", "", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcInsertAction(requestName, "table", "", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
@@ -38,19 +40,23 @@ class JdbcInsertActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE insert_again(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcInsertAction("insert", "INSERT_AGAIN", "42", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcInsertAction("insert", "INSERT_AGAIN", "42", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log a KO value when being unsuccessful" in {
-    val action = JdbcInsertAction("insert", "INSERT_NOBODY", "42", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcInsertAction("insert", "INSERT_NOBODY", "42", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -76,6 +82,7 @@ class JdbcInsertActionSpec extends JdbcActionSpec {
 
     action.execute(session)
 
+    waitForLatch(nextAction)
     nextAction.called should be(true)
   }
 }

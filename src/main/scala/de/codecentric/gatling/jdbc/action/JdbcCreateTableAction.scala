@@ -8,16 +8,17 @@ import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
 import scalikejdbc._
 
-import scala.util.Try
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by ronny on 10.05.17.
   */
 case class JdbcCreateTableAction(requestName: Expression[String],
-                                  tableName: Expression[String],
-                                  columns: Seq[ColumnDefinition],
-                                  statsEngine: StatsEngine,
-                                  next: Action) extends JdbcAction {
+                                 tableName: Expression[String],
+                                 columns: Seq[ColumnDefinition],
+                                 statsEngine: StatsEngine,
+                                 next: Action) extends JdbcAction {
 
   override def name: String = genName("jdbcCreateTable")
 
@@ -37,14 +38,17 @@ case class JdbcCreateTableAction(requestName: Expression[String],
     validatedTableName match {
       case Success(name) =>
         val query = s"CREATE TABLE $name($columnStrings)"
-        val tried = Try(DB autoCommit { implicit session =>
-          SQL(query).execute().apply()
+        val future = Future {
+          DB autoCommit { implicit session =>
+            SQL(query).execute().apply()
+          }
+        }
+        future.onComplete(result => {
+          log(start, nowMillis, result, requestName, session, statsEngine)
+          next ! session
         })
-        log(start, nowMillis, tried, requestName, session, statsEngine)
 
       case Failure(error) => throw new IllegalArgumentException(error)
     }
-    next ! session
   }
-
 }

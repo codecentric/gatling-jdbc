@@ -1,5 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
+import java.util.concurrent.TimeUnit
+
 import io.gatling.commons.stats.{KO, OK}
 import io.gatling.core.Predef._
 import io.gatling.core.stats.writer.ResponseMessage
@@ -11,10 +13,12 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
 
   "JdbcDropTableAction" should "use the request name in the log message" in {
     val requestName = "request"
-    val action = JdbcDropTableAction(requestName, "table", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDropTableAction(requestName, "table", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
@@ -43,19 +47,23 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
     DB autoCommit{ implicit session =>
       sql"""CREATE TABLE delete_other(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_OTHER", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_OTHER", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log a KO value when being unsuccessful" in {
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_YOU", statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_YOU", statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -66,6 +74,7 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
 
     action.execute(session)
 
+    waitForLatch(nextAction)
     nextAction.called should be(true)
   }
 }

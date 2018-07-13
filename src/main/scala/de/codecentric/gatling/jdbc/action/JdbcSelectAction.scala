@@ -11,7 +11,9 @@ import io.gatling.core.stats.StatsEngine
 import io.gatling.core.stats.message.ResponseTimings
 import scalikejdbc.{DB, SQL}
 
-import scala.util.Try
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.Failure
 
 /**
   * Created by ronny on 11.05.17.
@@ -38,19 +40,19 @@ case class JdbcSelectAction(requestName: Expression[String],
       case _ => throw new IllegalArgumentException
     }
 
-    val tried = Try(DB autoCommit { implicit session =>
-      SQL(sqlString).map(rs => rs.toMap()).toList().apply()
-    })
-
-    if (tried.isSuccess) {
-      performChecks(session, start, tried.get)
-    } else {
-      log(start, nowMillis, tried, requestName, session, statsEngine)
-      next ! session
+    val future: Future[List[Map[String, Any]]] = Future {
+      DB autoCommit { implicit session =>
+        SQL(sqlString).map(rs => rs.toMap()).toList().apply()
+      }
+    }
+    future.onComplete {
+      case scala.util.Success(value) => performChecks(session, start, value)
+      case fail: Failure[_] => log(start, nowMillis, fail, requestName, session, statsEngine)
+        next ! session
     }
   }
 
-  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]) = {
+  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]): Unit = {
     val (modifySession, error) = Check.check(tried, session, checks)
     val newSession = modifySession(session)
     error match {

@@ -11,6 +11,9 @@ import io.gatling.core.util.NameGen
 import scalikejdbc.{DB, SQL}
 
 import scala.util.Try
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 
 /**
   * Created by ronny on 11.05.17.
@@ -34,14 +37,17 @@ case class JdbcInsertAction(requestName: Expression[String],
 
     sqlString match {
       case Success(s) =>
-        val tried = Try(DB autoCommit { implicit session =>
-          SQL(s).execute().apply()
-        })
-        log(start, nowMillis, tried, requestName, session, statsEngine)
-
+        val future = Future {
+          DB autoCommit { implicit session =>
+            SQL(s).execute().apply()
+          }
+        }
+        future.onComplete(result => {
+          log(start, nowMillis, result, requestName, session, statsEngine)
+          next ! session
+        }
+        )
       case Failure(error) => throw new IllegalArgumentException(error)
     }
-
-    next ! session
   }
 }

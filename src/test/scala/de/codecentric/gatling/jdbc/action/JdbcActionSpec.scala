@@ -1,5 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
+import java.util.concurrent.{CountDownLatch, TimeUnit}
+
 import de.codecentric.gatling.jdbc.mock.MockStatsEngine
 import io.gatling.core.action.Action
 import io.gatling.core.session.Session
@@ -31,11 +33,18 @@ trait JdbcActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll
   override def afterAll(): Unit = {
     ConnectionPool.closeAll()
   }
+
+
+  def waitForLatch(latchAction: BlockingLatchAction): Boolean = {
+    latchAction.latch.await(2L, TimeUnit.SECONDS)
+  }
 }
 
-case class NextAction(session: Session, var called: Boolean = false) extends Action {
+case class NextAction(session: Session, var called: Boolean = false) extends BlockingLatchAction {
   override def name: String = "next Action"
 
   override def execute(s: Session): Unit = if(s == session) called = true
 
 }
+
+

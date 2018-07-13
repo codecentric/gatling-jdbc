@@ -7,7 +7,8 @@ import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
 import scalikejdbc.{DB, SQL}
 
-import scala.util.Try
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by ronny on 11.05.17.
@@ -31,13 +32,15 @@ case class JdbcDeletionAction(requestName: Expression[String],
       case _ => throw new IllegalArgumentException
     }
 
-    val tried = Try(DB autoCommit { implicit session =>
-      SQL(sqlString).map(rs => rs.toMap()).execute().apply()
+    val future = Future {
+      DB autoCommit { implicit session =>
+        SQL(sqlString).map(rs => rs.toMap()).execute().apply()
+      }
+    }
+    future.onComplete(result => {
+      log(start, nowMillis, result, requestName, session, statsEngine)
+      next ! session
     })
-
-    log(start, nowMillis, tried, requestName, session, statsEngine)
-
-    next ! session
   }
 
 }

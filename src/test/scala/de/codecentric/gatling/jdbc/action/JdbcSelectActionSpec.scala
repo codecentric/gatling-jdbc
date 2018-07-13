@@ -13,10 +13,12 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
 
   "JdbcSelectAction" should "use the request name in the log message" in {
     val requestName = "simulation"
+    val latchAction = BlockingLatchAction()
     val action = JdbcSelectAction(requestName, "*", "table", None, List.empty, statsEngine, next)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
@@ -25,10 +27,12 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE selection(id INTEGER PRIMARY KEY ); INSERT INTO SELECTION VALUES (1);INSERT INTO SELECTION VALUES (2)""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "SELECTION", None, List(simpleCheck(list => list.length == 2)), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "SELECTION", None, List(simpleCheck(list => list.length == 2)), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
@@ -37,10 +41,12 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE limited(id INTEGER PRIMARY KEY ); INSERT INTO LIMITED VALUES (1);INSERT INTO LIMITED VALUES (2)""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "LIMITED", Some("id=2"), List(simpleCheck(list => list.length == 1)), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "LIMITED", Some("id=2"), List(simpleCheck(list => list.length == 1)), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
@@ -49,19 +55,23 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE success(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "SUCCESS", None, List.empty, statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "SUCCESS", None, List.empty, statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log an KO value after unsuccessful selection" in {
-    val action = JdbcSelectAction("request", "*", "failure", None, List.empty, statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "failure", None, List.empty, statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -70,10 +80,12 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE checkTable(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "CHECKTABLE", None, List(simpleCheck(_ => false)), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "CHECKTABLE", None, List(simpleCheck(_ => false)), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -82,10 +94,12 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE check_again(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcSelectAction("request", "*", "CHECK_AGAIN", None, List(simpleCheck(_ => true)), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("request", "*", "CHECK_AGAIN", None, List(simpleCheck(_ => true)), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
@@ -117,6 +131,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
 
     action.execute(session)
 
+    waitForLatch(nextAction)
     nextAction.called should be(true)
   }
 }

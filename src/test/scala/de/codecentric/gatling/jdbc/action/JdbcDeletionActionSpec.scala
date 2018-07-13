@@ -17,10 +17,12 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
 
   "JdbcDeletionAction" should "use the request name in the log message" in {
     val requestName = "name"
-    val action = JdbcDeletionAction(requestName, "table", None, statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDeletionAction(requestName, "table", None, statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
@@ -57,19 +59,23 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
     DB autoCommit { implicit session =>
       sql"""CREATE TABLE table_1(bar INTEGER ); INSERT INTO table_1 VALUES (1);""".execute().apply()
     }
-    val action = JdbcDeletionAction("request", "table_1", Some("bar = 1"), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDeletionAction("request", "table_1", Some("bar = 1"), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log an KO value when being unsuccessful" in {
-    val action = JdbcDeletionAction("request", "non_existing", Some("bar = 1"), statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDeletionAction("request", "non_existing", Some("bar = 1"), statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
@@ -95,6 +101,7 @@ class JdbcDeletionActionSpec extends JdbcActionSpec {
 
     action.execute(session)
 
+    waitForLatch(nextAction)
     nextAction.called should be(true)
   }
 }
