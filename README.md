@@ -2,11 +2,17 @@
 JDBC support for Gatling
 
 [![Build Status](https://travis-ci.org/codecentric/gatling-jdbc.svg?branch=master)](https://travis-ci.org/codecentric/gatling-jdbc)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.codecentric/gatling-jdbc_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.codecentric/gatling-jdbc_2.12)
+
 
 The JDBC extension for Gatling was originally created to accompany a blog post that shows how to extend Gatling.
 Currently, five SQL operations are being supported. See below for the usage.
 
 ## Usage
+
+```scala
+libraryDependencies += "de.codecentric" %% "gatling-jdbc" % "version"
+```
 
 ### General
 
