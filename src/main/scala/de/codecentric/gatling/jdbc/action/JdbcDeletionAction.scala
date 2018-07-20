@@ -1,7 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
 import io.gatling.commons.util.ClockSingleton.nowMillis
-import io.gatling.commons.validation.Success
+import io.gatling.commons.validation.{Failure, Success, Validation}
 import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
@@ -24,23 +24,26 @@ case class JdbcDeletionAction(requestName: Expression[String],
   override def execute(session: Session): Unit = {
     val start = nowMillis
     val validatedTableName = tableName.apply(session)
-    val validatedWhere = where.map(w => w.apply(session))
 
-    val sqlString = (validatedTableName, validatedWhere) match {
-      case (Success(tableString), Some(Success(whereString))) => s"DELETE FROM $tableString WHERE $whereString"
-      case (Success(tableString), None) => s"DELETE FROM $tableString"
-      case _ => throw new IllegalArgumentException
-    }
+    val wherePart = where.fold("")(_.apply(session) match {
+      case Success(whereString) => s"WHERE $whereString"
+      case Failure(e) => throw new IllegalArgumentException(e)
+    })
 
-    val future = Future {
-      DB autoCommit { implicit session =>
-        SQL(sqlString).map(rs => rs.toMap()).execute().apply()
+    val result: Validation[Future[Unit]] = for {
+      tableString <- validatedTableName
+      sqlString <- Success(s"DELETE FROM $tableString $wherePart")
+    } yield Future {
+        DB autoCommit { implicit session =>
+          SQL(sqlString).map(rs => rs.toMap()).execute().apply()
+        }
       }
-    }
-    future.onComplete(result => {
+
+    result.foreach(_.onComplete(result => {
       log(start, nowMillis, result, requestName, session, statsEngine)
       next ! session
-    })
-  }
+    }))
 
+    result.onFailure(e => throw new IllegalArgumentException(e))
+  }
 }

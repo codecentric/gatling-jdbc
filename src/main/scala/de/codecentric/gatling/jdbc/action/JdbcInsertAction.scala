@@ -1,16 +1,12 @@
 package de.codecentric.gatling.jdbc.action
 
-import io.gatling.commons.stats.OK
 import io.gatling.commons.util.ClockSingleton.nowMillis
-import io.gatling.commons.validation.{Failure, Success, Validation}
-import io.gatling.core.action.{Action, ChainableAction}
+import io.gatling.commons.validation.{Success, Validation}
+import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
-import io.gatling.core.stats.message.ResponseTimings
-import io.gatling.core.util.NameGen
 import scalikejdbc.{DB, SQL}
 
-import scala.util.Try
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -30,24 +26,23 @@ case class JdbcInsertAction(requestName: Expression[String],
     val start = nowMillis
     val validatedTableName = tableName.apply(session)
     val validatedValues = values.apply(session)
-    val sqlString: Validation[String] = for {
+
+    val result: Validation[Future[Unit]] = for {
       tableValue <- validatedTableName
       valuesValue <- validatedValues
-    } yield s"INSERT INTO $tableValue VALUES ( $valuesValue )"
-
-    sqlString match {
-      case Success(s) =>
-        val future = Future {
-          DB autoCommit { implicit session =>
-            SQL(s).execute().apply()
-          }
+      sql <- Success(s"INSERT INTO $tableValue VALUES ( $valuesValue )")
+    } yield {
+      Future {
+        DB autoCommit { implicit session =>
+          SQL(sql).execute().apply()
         }
-        future.onComplete(result => {
-          log(start, nowMillis, result, requestName, session, statsEngine)
-          next ! session
-        }
-        )
-      case Failure(error) => throw new IllegalArgumentException(error)
+      }
     }
+    result.foreach(_.onComplete(result => {
+      log(start, nowMillis, result, requestName, session, statsEngine)
+      next ! session
+    }))
+
+    result.onFailure(e => throw new IllegalArgumentException(e))
   }
 }

@@ -28,7 +28,7 @@ case class JdbcCreateTableAction(requestName: Expression[String],
       t => (
         t.name.name.apply(session),
         t.dataType.dataType.apply(session),
-        t.columnConstraint.map(constr => constr.constraint).map(expr => expr.apply(session)).getOrElse(Success(""))))
+        t.columnConstraint.map(_.constraint(session)).getOrElse(Success(""))))
       .map {
         case (Success(columnName), Success(dataType), Success(constraint)) => s"$columnName $dataType $constraint"
         case _ => throw new IllegalArgumentException
