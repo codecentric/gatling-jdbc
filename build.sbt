@@ -13,25 +13,27 @@ libraryDependencies ++= Seq(
 )
 enablePlugins(GatlingPlugin)
 
+parallelExecution in Test := false
+
+//everything below this line is related to the project release
 homepage := Some(url("https://github.com/codecentric/gatling-jdbc"))
 scmInfo := Some(ScmInfo(url("https://github.com/codecentric/gatling-jdbc"), "git@github.com:codecentric/gatling-jdbc.git"))
 developers := List(Developer("rbraeunlich",
-  "Ronny Bräunlich",
-  "ronny.braeunlich@codecentric.de",
-  url("https://github.com/rbraeunlich")))
+"Ronny Bräunlich",
+"ronny.braeunlich@codecentric.de",
+    url("https://github.com/rbraeunlich")))
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
-publishMavenStyle := true
 
 // Add sonatype repository settings
 publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
-  else
-    Opts.resolver.sonatypeStaging
+if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+else
+      Opts.resolver.sonatypeStaging
 )
 
 pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
 publishMavenStyle := true
-
-parallelExecution in Test := false
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseProcess += releaseStepCommand("sonatypeRelease")

@@ -146,5 +146,4 @@ Please keep in mind that the state of this Gatling extension can be considered e
 Firstly, you gotta have in your home `.sbt/1.0/sonatype.sbt` configured to contain your username and password for Sonatype.
 Secondly, open the sbt shell an perform the following steps:
 1. `set pgpSecretRing := file("/home/<user>/.sbt/gpg/secring.asc")` or where ever it is
-2. `publishSigned`
-3. `sonatypeRelease`
+2. `release`
