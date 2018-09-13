@@ -75,7 +75,7 @@ exec(jdbc("insertion")
 
 ### SELECT
 
-In contrast to the previous operations, select directly requires a parameter and is called via `jdbc().select(<what>)'. The intention is to closely resemble the SQL syntax.
+In contrast to the previous operations, select directly requires a parameter and is called via `jdbc().select(<what>)`. The intention is to closely resemble the SQL syntax.
 Using `where()` is optional for SELECT. Therefore, the following two ways are both valid:
 ```scala
 exec(jdbc("selection")
