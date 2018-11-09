@@ -134,4 +134,17 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     waitForLatch(nextAction)
     nextAction.called should be(true)
   }
+
+  it should "pass the session to the next action even when a check crashes" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE crashes(id INTEGER PRIMARY KEY )""".execute().apply()
+    }
+    val nextAction = NextAction(session.markAsFailed)
+    val action = JdbcSelectAction("request", "*", "CRASHES", None, List(simpleCheck(_ => throw new RuntimeException("Test error"))), statsEngine, nextAction)
+
+    action.execute(session)
+
+    waitForLatch(nextAction)
+    nextAction.called should be(true)
+  }
 }

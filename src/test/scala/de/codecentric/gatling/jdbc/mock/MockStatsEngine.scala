@@ -15,12 +15,13 @@
   */
 package de.codecentric.gatling.jdbc.mock
 
+import java.util.Date
+
 import io.gatling.commons.stats.Status
 import io.gatling.core.session.{GroupBlock, Session}
 import io.gatling.core.stats.StatsEngine
 import io.gatling.core.stats.message.ResponseTimings
-import io.gatling.core.stats.writer.{DataWriterMessage, GroupMessage, ResponseMessage, UserMessage}
-
+import io.gatling.core.stats.writer._
 import akka.actor.ActorRef
 import com.typesafe.scalalogging.StrictLogging
 
@@ -58,7 +59,8 @@ class MockStatsEngine extends StatsEngine with StrictLogging {
   override def logGroupEnd(session: Session, group: GroupBlock, exitTimestamp: Long): Unit =
     handle(GroupMessage(session.scenario, session.userId, group.hierarchy, group.startTimestamp, exitTimestamp, group.cumulatedResponseTime, group.status))
 
-  override def logCrash(session: Session, requestName: String, error: String): Unit = {}
+  override def logCrash(session: Session, requestName: String, error: String): Unit =
+    handle(ErrorMessage(error, new Date().getTime))
 
   override def reportUnbuildableRequest(session: Session, requestName: String, errorMessage: String): Unit = {}
 

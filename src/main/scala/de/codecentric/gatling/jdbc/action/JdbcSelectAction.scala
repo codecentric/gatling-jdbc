@@ -13,7 +13,7 @@ import scalikejdbc.{DB, SQL}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Failure
+import scala.util.{Failure, Try}
 
 /**
   * Created by ronny on 11.05.17.
@@ -46,13 +46,19 @@ case class JdbcSelectAction(requestName: Expression[String],
       }
     }
     future.onComplete {
-      case scala.util.Success(value) => performChecks(session, start, value)
-      case fail: Failure[_] => log(start, nowMillis, fail, requestName, session, statsEngine)
+      case scala.util.Success(value) =>
+        next ! Try(performChecks(session, start, value)).recover {
+          case err =>
+            statsEngine.logCrash(session, requestName.apply(session).get, err.getMessage)
+            session.markAsFailed
+        }.get
+      case fail: Failure[_] =>
+        log(start, nowMillis, fail, requestName, session, statsEngine)
         next ! session
     }
   }
 
-  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]): Unit = {
+  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]): Session = {
     val (modifySession, error) = Check.check(tried, session, checks)
     val newSession = modifySession(session)
     error match {
@@ -60,10 +66,10 @@ case class JdbcSelectAction(requestName: Expression[String],
         requestName.apply(session).map { resolvedRequestName =>
           statsEngine.logResponse(session, resolvedRequestName, ResponseTimings(start, nowMillis), KO, None, None)
         }
-        next ! newSession.markAsFailed
+        newSession.markAsFailed
       case _ =>
         log(start, nowMillis, scala.util.Success(""), requestName, session, statsEngine)
-        next ! newSession
+        newSession
     }
   }
 }

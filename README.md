@@ -124,7 +124,12 @@ jdbc("drop bar table").drop().table("bar")
 
 ### Checks
 
-Currently, checks are only implemented for SELECT. When importing `de.codecentric.gatling.jdbc.Predef._` the `simpleCheck` method is already provided. This method takes a function from `List[Map[String, Any]]` to `Boolean`.
+Currently, checks are only implemented for SELECT. When importing `de.codecentric.gatling.jdbc.Predef._` two types of checks are provided.
+The first type is the SimpleCheck.
+
+#### SimpleCheck
+
+The `simpleCheck` method (importet via `Predef`) allows for very basic checks. This method takes a function from `List[Map[String, Any]]` to `Boolean`.
 Each element in the list represents a row and the map the individual columns. Checks are simply appended to the selection, e.g.:
 ```scala
 exec(jdbc("selection")
@@ -135,6 +140,52 @@ exec(jdbc("selection")
 )
 ```
 A SELECT without a WHERE clause can also be validated with a `simpleCheck`.
+
+There is also another type of check that is more closely integrated with Gatling, the `CheckBuilders`.
+
+#### CheckBuilder
+
+`CheckBuilder` is actually a class provided by Gatling. Based on the Gatling classes, Gatling JDBC provides two types of them.
+The `JdbcAnyCheckBuilder` object contains the instances `SingleAnyResult` and `ManyAnyResults`. Both can be used in the tests quickly by calling either `jdbcSingleResponse` or `jdbcManyResponse`.
+
+The difference between the two is that the single response extracts the head out of the list of results. So you can only verify a `Map[String, Any]`.
+Whereas the many response, like the simple checks, returns a `List[Map[String, Any]]`. Validation is performed via the Gatling API.
+E.g. checking a single result can look like this:
+```scala
+exec(jdbc("selectionSingleCheck")
+  .select("*")
+  .from("bar")
+  .where("abc=4")
+  .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4)))
+)
+```
+This validates the data in the two columns "ABC" and "FOO". Please note explicit typing of the map. Without it the compiler will complain.
+
+A check with multiple results doesn't look very different:
+```scala
+exec(jdbc("selectionManyCheck")
+  .select("*")
+  .from("bar")
+  .where("abc=4 OR abc=5")
+  .check(jdbcManyResponse.is(List(
+    Map("ABC" -> 4, "FOO" -> 4),
+    Map("ABC" -> 5, "FOO" -> 5)))
+  )
+)
+```
+
+The advantage those CheckBuilder provide is that they can access certain functionality provided by the Gatling interfaces and classes they extend.
+The most important one is the possibility to save the result of a selection to the current session.
+By calling `saveAs` after a check you can place the result in the session under the given name. So e.g. if you want to store the result of the single check you can do it like this:
+```scala
+exec(jdbc("selectionSingleCheckSaving")
+  .select("*")
+  .from("bar")
+  .where("abc=4")
+  .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4))
+  .saveAs("myResult"))
+)
+```
 
 ### Final
 
