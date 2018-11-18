@@ -8,7 +8,6 @@ import io.gatling.core.action.Action
 import io.gatling.core.check.Check
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
-import io.gatling.core.stats.message.ResponseTimings
 import scalikejdbc.{DB, SQL}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -50,7 +49,8 @@ case class JdbcSelectAction(requestName: Expression[String],
       case scala.util.Success(value) =>
         next ! Try(performChecks(session, start, value)).recover {
           case err =>
-            statsEngine.logCrash(session, requestName.apply(session).get, err.getMessage)
+            val logRequestName = requestName(session).toOption.getOrElse("JdbcSelectAction")
+            statsEngine.logCrash(session, logRequestName, err.getMessage)
             session.markAsFailed
         }.get
       case fail: Failure[_] =>
@@ -60,17 +60,16 @@ case class JdbcSelectAction(requestName: Expression[String],
   }
 
   private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]): Session = {
-    val (modifySession, error) = Check.check(tried, session, checks)
-    val newSession = modifySession(session)
+    val (modifiedSession, error) = Check.check(tried, session, checks)
     error match {
       case Some(failure) =>
         requestName.apply(session).map { resolvedRequestName =>
           statsEngine.logResponse(session, resolvedRequestName, start, clock.nowMillis, KO, None, None)
         }
-        newSession.markAsFailed
+        modifiedSession.markAsFailed
       case _ =>
         log(start, clock.nowMillis, scala.util.Success(""), requestName, session, statsEngine)
-        newSession
+        modifiedSession
     }
   }
 }
