@@ -1,7 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
 import de.codecentric.gatling.jdbc.builder.column.ColumnDefinition
-import io.gatling.commons.util.ClockSingleton.nowMillis
+import io.gatling.commons.util.Clock
 import io.gatling.commons.validation.{Failure, Success}
 import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
@@ -17,13 +17,14 @@ import scala.concurrent.Future
 case class JdbcCreateTableAction(requestName: Expression[String],
                                  tableName: Expression[String],
                                  columns: Seq[ColumnDefinition],
+                                 clock: Clock,
                                  statsEngine: StatsEngine,
                                  next: Action) extends JdbcAction {
 
   override def name: String = genName("jdbcCreateTable")
 
   override def execute(session: Session): Unit = {
-    val start = nowMillis
+    val start = clock.nowMillis
     val columnStrings = columns.map(
       t => (
         t.name.name.apply(session),
@@ -44,7 +45,7 @@ case class JdbcCreateTableAction(requestName: Expression[String],
           }
         }
         future.onComplete(result => {
-          log(start, nowMillis, result, requestName, session, statsEngine)
+          log(start, clock.nowMillis, result, requestName, session, statsEngine)
           next ! session
         })
 

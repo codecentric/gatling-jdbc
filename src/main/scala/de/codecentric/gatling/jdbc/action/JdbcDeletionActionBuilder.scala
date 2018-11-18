@@ -15,7 +15,8 @@ case class JdbcDeletionWithoutWhereActionBuilder(requestName: Expression[String]
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcDeletionAction(requestName, tableName, None, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcDeletionAction(requestName, tableName, None, clock, statsEngine, next)
   }
 }
 
@@ -23,7 +24,8 @@ case class JdbcDeletionWithWhereActionBuilder(requestName: Expression[String], t
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcDeletionAction(requestName, tableName, Some(where), statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcDeletionAction(requestName, tableName, Some(where), clock, statsEngine, next)
   }
 
 }

@@ -1,6 +1,6 @@
 package de.codecentric.gatling.jdbc.action
 
-import io.gatling.commons.util.ClockSingleton.nowMillis
+import io.gatling.commons.util.Clock
 import io.gatling.commons.validation.{Failure, Success, Validation}
 import io.gatling.core.action.Action
 import io.gatling.core.session.{Expression, Session}
@@ -16,13 +16,14 @@ import scala.concurrent.Future
 case class JdbcDeletionAction(requestName: Expression[String],
                               tableName: Expression[String],
                               where: Option[Expression[String]],
+                              clock: Clock,
                               statsEngine: StatsEngine,
                               next: Action) extends JdbcAction {
 
   override def name: String = genName("jdbcDelete")
 
   override def execute(session: Session): Unit = {
-    val start = nowMillis
+    val start = clock.nowMillis
     val validatedTableName = tableName.apply(session)
 
     val wherePart = where.fold("")(_.apply(session) match {
@@ -40,7 +41,7 @@ case class JdbcDeletionAction(requestName: Expression[String],
       }
 
     result.foreach(_.onComplete(result => {
-      log(start, nowMillis, result, requestName, session, statsEngine)
+      log(start, clock.nowMillis, result, requestName, session, statsEngine)
       next ! session
     }))
 

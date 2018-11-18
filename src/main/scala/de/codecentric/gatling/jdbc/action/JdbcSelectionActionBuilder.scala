@@ -15,7 +15,8 @@ case class JdbcSelectionWithoutWhereActionBuilder(requestName: Expression[String
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcSelectAction(requestName, what, from, None, checks.toList, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcSelectAction(requestName, what, from, None, checks.toList, clock, statsEngine, next)
   }
 
 }
@@ -24,7 +25,8 @@ case class JdbcSelectionWithWhereActionBuilder(requestName: Expression[String], 
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcSelectAction(requestName, what, from, Some(where), checks.toList, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcSelectAction(requestName, what, from, Some(where), checks.toList, clock, statsEngine, next)
   }
 
 }

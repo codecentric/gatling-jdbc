@@ -12,6 +12,7 @@ case class JdbcTableDroppingActionBuilder(requestName: Expression[String], table
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcDropTableAction(requestName, tableName, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcDropTableAction(requestName, tableName, clock, statsEngine, next)
   }
 }

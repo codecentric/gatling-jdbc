@@ -19,17 +19,14 @@ class JdbcProtocol(url: String, username: String, pwd: String, driver: String) e
 
 object JdbcProtocol {
 
-  val jdbcProtocolKey = new ProtocolKey {
-
-    override type Protocol = JdbcProtocol
-    override type Components = JdbcComponents
+  val jdbcProtocolKey: ProtocolKey[JdbcProtocol, JdbcComponents] = new ProtocolKey[JdbcProtocol, JdbcComponents] {
 
     override def protocolClass: Class[protocol.Protocol] = classOf[JdbcProtocol].asInstanceOf[Class[io.gatling.core.protocol.Protocol]]
 
     override def defaultProtocolValue(configuration: GatlingConfiguration): JdbcProtocol =
       throw new IllegalStateException("Can't provide a default value for JdbcProtocol")
 
-    override def newComponents(system: ActorSystem, coreComponents: CoreComponents): (JdbcProtocol) => JdbcComponents = {
+    override def newComponents(coreComponents: CoreComponents): JdbcProtocol => JdbcComponents = {
       protocol => JdbcComponents(protocol)
     }
 

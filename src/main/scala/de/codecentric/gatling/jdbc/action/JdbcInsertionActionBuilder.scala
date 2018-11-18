@@ -12,7 +12,8 @@ case class JdbcInsertionActionBuilder(requestName: Expression[String], tableName
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcInsertAction(requestName, tableName, values, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcInsertAction(requestName, tableName, values, clock, statsEngine, next)
   }
 
 }

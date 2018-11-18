@@ -15,7 +15,8 @@ case class JdbcTableCreationActionBuilder(requestName: Expression[String], name:
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine
-    JdbcCreateTableAction(requestName, name, columns, statsEngine, next)
+    val clock = ctx.coreComponents.clock
+    JdbcCreateTableAction(requestName, name, columns, clock, statsEngine, next)
   }
 
 }
