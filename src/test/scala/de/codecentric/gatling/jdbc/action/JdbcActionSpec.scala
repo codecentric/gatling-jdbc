@@ -7,7 +7,7 @@ import de.codecentric.gatling.jdbc.mock.MockStatsEngine
 import io.gatling.core.action.Action
 import io.gatling.core.session.Session
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
-import scalikejdbc.ConnectionPool
+import scalikejdbc.{ConnectionPool, GlobalSettings, LoggingSQLAndTimeSettings}
 
 /**
   * Created by ronny on 12.05.17.
@@ -24,6 +24,7 @@ trait JdbcActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     Class.forName("org.h2.Driver")
+    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true)
     ConnectionPool.singleton("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE", "sa", "sa")
   }
 
