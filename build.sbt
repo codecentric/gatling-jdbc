@@ -2,8 +2,8 @@ organization := "de.codecentric"
 name := "gatling-jdbc"
 scalaVersion := "2.12.6"
 libraryDependencies ++= Seq(
-  "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.0.0",
-  "io.gatling" % "gatling-test-framework" % "3.0.0",
+  "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.0.1",
+  "io.gatling" % "gatling-test-framework" % "3.0.1",
   "org.scalikejdbc" %% "scalikejdbc" % "3.3.1",
   "com.h2database" % "h2" % "1.4.197",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
