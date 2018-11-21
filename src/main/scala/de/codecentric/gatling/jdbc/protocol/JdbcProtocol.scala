@@ -1,6 +1,5 @@
 package de.codecentric.gatling.jdbc.protocol
 
-import akka.actor.ActorSystem
 import io.gatling.core.{CoreComponents, protocol}
 import io.gatling.core.config.GatlingConfiguration
 import io.gatling.core.protocol.{Protocol, ProtocolKey}
@@ -13,6 +12,7 @@ class JdbcProtocol(url: String, username: String, pwd: String, driver: String) e
 
   Class.forName(driver)
 
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true)
   ConnectionPool.singleton(url, username, pwd)
 
 }
