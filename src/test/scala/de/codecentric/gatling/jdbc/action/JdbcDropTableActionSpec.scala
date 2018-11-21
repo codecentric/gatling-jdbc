@@ -30,10 +30,12 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
     DB autoCommit{ implicit session =>
       sql"""CREATE TABLE delete_me(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_ME", clock, statsEngine, next)
+    val latchAction = BlockingLatchAction()
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_ME", clock, statsEngine, latchAction)
 
     action.execute(session)
 
+    waitForLatch(latchAction)
     val result = DB readOnly { implicit session =>
       sql"""SELECT * FROM information_schema.tables WHERE TABLE_NAME = 'DELETE_ME' """.map(rs => rs.toMap()).single().apply()
     }
