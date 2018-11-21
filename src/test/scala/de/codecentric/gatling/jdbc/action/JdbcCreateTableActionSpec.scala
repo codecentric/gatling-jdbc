@@ -54,12 +54,15 @@ class JdbcCreateTableActionSpec extends JdbcActionSpec {
 
   it should "log a KO message if an error occurs" in {
     val latchAction = BlockingLatchAction()
-    val action = JdbcCreateTableAction("request", "ko_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), clock, statsEngine, next)
+    val latchAction2 = BlockingLatchAction()
+    val action = JdbcCreateTableAction("request", "ko_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), clock, statsEngine, latchAction)
+    val action2 = JdbcCreateTableAction("request", "ko_table", Seq(column(name("foo"), dataType("INTEGER"), constraint("PRIMARY KEY"))), clock, statsEngine, latchAction2)
 
     action.execute(session)
-    action.execute(session)
-
     waitForLatch(latchAction)
+    action2.execute(session)
+
+    waitForLatch(latchAction2)
     statsEngine.dataWriterMsg should have length 2
     statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
