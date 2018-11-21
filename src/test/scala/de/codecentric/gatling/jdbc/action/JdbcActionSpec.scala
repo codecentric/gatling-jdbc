@@ -1,6 +1,7 @@
 package de.codecentric.gatling.jdbc.action
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 import de.codecentric.gatling.jdbc.mock.MockStatsEngine
 import io.gatling.core.action.Action
@@ -13,7 +14,7 @@ import scalikejdbc.ConnectionPool
   */
 trait JdbcActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll with Matchers {
 
-  val session = Session("scenario", 0)
+  val session = Session("scenario", 0, Instant.now().getEpochSecond)
   val next = new Action {
     override def name: String = "mockAction"
 

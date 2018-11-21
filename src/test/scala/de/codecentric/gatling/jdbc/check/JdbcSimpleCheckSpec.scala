@@ -1,5 +1,8 @@
 package de.codecentric.gatling.jdbc.check
 
+import java.time.Instant
+import java.util
+
 import io.gatling.commons.validation.{Failure, Success}
 import io.gatling.core.check.CheckResult
 import io.gatling.core.session.Session
@@ -12,9 +15,9 @@ import scala.collection.mutable
   */
 class JdbcSimpleCheckSpec extends FlatSpec with Matchers {
 
-  val session = Session("scenario", 0)
+  val session = Session("scenario", 0, Instant.now.getEpochSecond)
 
-  implicit val cache: mutable.Map[Any, Any] = mutable.Map.empty
+  implicit val cache: util.Map[Any, Any] = new util.HashMap[Any, Any]()
 
   "JdbcSimpleCheck" should "log a success if the function returns true" in {
     val check = JdbcSimpleCheck(_ => true)

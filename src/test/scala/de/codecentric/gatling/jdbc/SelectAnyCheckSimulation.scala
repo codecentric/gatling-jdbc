@@ -3,6 +3,7 @@ package de.codecentric.gatling.jdbc
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
+import io.gatling.core.check.CheckBuilder
 import io.gatling.core.scenario.Simulation
 
 /**

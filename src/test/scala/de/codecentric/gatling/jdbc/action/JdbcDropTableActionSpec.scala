@@ -3,6 +3,7 @@ package de.codecentric.gatling.jdbc.action
 import java.util.concurrent.TimeUnit
 
 import io.gatling.commons.stats.{KO, OK}
+import io.gatling.commons.util.DefaultClock
 import io.gatling.core.Predef._
 import io.gatling.core.stats.writer.ResponseMessage
 import scalikejdbc._
@@ -11,23 +12,25 @@ import scalikejdbc._
   */
 class JdbcDropTableActionSpec extends JdbcActionSpec {
 
+  private val clock = new DefaultClock
+
   "JdbcDropTableAction" should "use the request name in the log message" in {
     val requestName = "request"
     val latchAction = BlockingLatchAction()
-    val action = JdbcDropTableAction(requestName, "table", statsEngine, latchAction)
+    val action = JdbcDropTableAction(requestName, "table", clock, statsEngine, latchAction)
 
     action.execute(session)
 
     waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
-    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].name should equal(requestName)
+    statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].name should equal(requestName)
   }
 
   it should "drop the table with the specified name" in {
     DB autoCommit{ implicit session =>
       sql"""CREATE TABLE delete_me(id INTEGER PRIMARY KEY )""".execute().apply()
     }
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_ME", statsEngine, next)
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_ME", clock, statsEngine, next)
 
     action.execute(session)
 
@@ -38,7 +41,7 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
   }
 
   it should "throw an IAE if the expression cannot be resolved" in {
-    val action = JdbcDropTableAction("deleteRequest", "${table}", statsEngine, next)
+    val action = JdbcDropTableAction("deleteRequest", "${table}", clock, statsEngine, next)
 
     an[IllegalArgumentException] shouldBe thrownBy(action.execute(session))
   }
@@ -48,29 +51,29 @@ class JdbcDropTableActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE delete_other(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_OTHER", statsEngine, latchAction)
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_OTHER", clock, statsEngine, latchAction)
 
     action.execute(session)
 
     waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
-    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(OK)
+    statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].status should equal(OK)
   }
 
   it should "log a KO value when being unsuccessful" in {
     val latchAction = BlockingLatchAction()
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_YOU", statsEngine, latchAction)
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_YOU", clock, statsEngine, latchAction)
 
     action.execute(session)
 
     waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
-    statsEngine.dataWriterMsg.head.get.asInstanceOf[ResponseMessage].status should equal(KO)
+    statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].status should equal(KO)
   }
 
   it should "pass the session to the next action" in {
     val nextAction = NextAction(session)
-    val action = JdbcDropTableAction("deleteRequest", "DELETE_SOMETHING", statsEngine, nextAction)
+    val action = JdbcDropTableAction("deleteRequest", "DELETE_SOMETHING", clock, statsEngine, nextAction)
 
     action.execute(session)
 
