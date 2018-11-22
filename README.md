@@ -198,3 +198,8 @@ Firstly, you gotta have in your home `.sbt/1.0/sonatype.sbt` configured to conta
 Secondly, open the sbt shell an perform the following steps:
 1. `set pgpSecretRing := file("/home/<user>/.sbt/gpg/secring.asc")` or where ever it is
 2. `release`
+
+## Executing the intergration tests
+
+If you have to run Docker on your machine as sudo, then to execute the integration tests, sbt has to be started as sudo, too.
+Only `sudo sbt gatling:test` will then be allowed to start the container of the databases.

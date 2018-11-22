@@ -1,15 +1,14 @@
-package de.codecentric.gatling.jdbc
+package de.codecentric.gatling.jdbc.simulation
 
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
-import io.gatling.core.check.CheckBuilder
 import io.gatling.core.scenario.Simulation
 
 /**
   * Created by ronny on 10.05.17.
   */
-class SelectAnyCheckSimulation extends Simulation {
+class SelectCheckSimulation extends Simulation {
 
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
 
@@ -35,24 +34,16 @@ class SelectAnyCheckSimulation extends Simulation {
       .values("${n}, ${n}")
     )
   }.pause(1).
-    exec(jdbc("selectionSingleCheck")
+    exec(jdbc("selection")
       .select("*")
       .from("bar")
       .where("abc=4")
-      .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4))
-      .saveAs("myResult"))
-    ).pause(1).
-    exec(jdbc("selectionManyCheck")
-      .select("*")
-      .from("bar")
-      .where("abc=4 OR abc=5")
-      .check(jdbcManyResponse.is(List(
-        Map("ABC" -> 4, "FOO" -> 4),
-        Map("ABC" -> 5, "FOO" -> 5)))
-      )
+      .check(simpleCheck(result => result.head("FOO") == 4))
     )
-  //.exec(session => session("something").as[List[Map[String, Any]]])
 
 
-  setUp(testScenario.inject(atOnceUsers(1))).protocols(jdbcConfig)
+  setUp(testScenario.inject(atOnceUsers(1)))
+    .protocols(jdbcConfig)
+    .assertions(global.failedRequests.count.is(0))
+
 }

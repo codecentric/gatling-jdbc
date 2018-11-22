@@ -1,10 +1,11 @@
-package de.codecentric.gatling.jdbc
+package de.codecentric.gatling.jdbc.simulation
 
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
 
+import scala.concurrent.duration._
 import scala.util.Random
 
 /**
@@ -15,8 +16,8 @@ class InsertSimulation extends Simulation {
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
   val feeder = Iterator.continually(Map("rand" -> (Random.alphanumeric.take(20).mkString + "@foo.com")))
 
-  val testScenario = scenario("createTable").
-    exec(jdbc("bar table")
+  val createTable = scenario("create table")
+    .exec(jdbc("bar table")
       .create()
       .table("bar")
       .columns(
@@ -27,6 +28,9 @@ class InsertSimulation extends Simulation {
         )
       )
     )
+
+  val insertion = scenario("insertion")
+    .pause(3.seconds)
     .feed(feeder)
     .repeat(10, "n") {
       exec(jdbc("insertion")
@@ -36,5 +40,9 @@ class InsertSimulation extends Simulation {
       )
     }
 
-  setUp(testScenario.inject(atOnceUsers(10))).protocols(jdbcConfig)
+  setUp(
+    createTable.inject(atOnceUsers(1)),
+    insertion.inject(atOnceUsers(10))
+  ).protocols(jdbcConfig)
+    .assertions(global.failedRequests.count.is(0))
 }

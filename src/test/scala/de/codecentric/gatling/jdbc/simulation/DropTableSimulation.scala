@@ -1,4 +1,4 @@
-package de.codecentric.gatling.jdbc
+package de.codecentric.gatling.jdbc.simulation
 
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
@@ -30,5 +30,8 @@ class DropTableSimulation extends Simulation {
     ).exec(jdbc("drop bar table").drop().table("bar"))
 
 
-  setUp(testScenario.inject(atOnceUsers(1))).protocols(jdbcConfig)
+  setUp(testScenario.inject(atOnceUsers(1)))
+    .protocols(jdbcConfig)
+    .assertions(global.failedRequests.count.is(0))
+
 }

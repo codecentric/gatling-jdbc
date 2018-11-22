@@ -1,27 +1,27 @@
-package de.codecentric.gatling.jdbc
+package de.codecentric.gatling.jdbc.simulation
 
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
-import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.containers.PostgreSQLContainer
 
 /**
   * Created by ronny on 10.05.17.
   */
-class InsertMySqlSimulation extends Simulation {
+class InsertPostgresSimulation extends Simulation {
 
-  val mySql = new MySQLContainer()
-  mySql.start()
+  val postgres = new PostgreSQLContainer()
+  postgres.start()
 
-  val jdbcConfig = jdbc.url(mySql.getJdbcUrl).username(mySql.getUsername).password(mySql.getPassword).driver(mySql.getDriverClassName)
+  val jdbcConfig = jdbc.url(postgres.getJdbcUrl).username(postgres.getUsername).password(postgres.getPassword).driver(postgres.getDriverClassName)
 
   val tableIdentFeeder = for (x <- 0 until 10) yield Map("tableId" -> x)
 
   val uniqueNumberFeeder = for (x <- 0 until 100) yield Map("unique" -> x)
 
-  after{
-    mySql.stop()
+  after {
+    postgres.stop()
   }
 
   val createTables = scenario("createTable").feed(tableIdentFeeder.iterator).
@@ -51,4 +51,6 @@ class InsertMySqlSimulation extends Simulation {
     createTables.inject(atOnceUsers(10)),
     scenario("fillTables").pause(5).exec(fillTables).inject(atOnceUsers(100))
   ).protocols(jdbcConfig)
+    .assertions(global.successfulRequests.percent.gte(99))
+
 }
