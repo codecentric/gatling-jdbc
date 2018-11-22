@@ -4,17 +4,25 @@ import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
+import org.testcontainers.containers.MySQLContainer
 
 /**
   * Created by ronny on 10.05.17.
   */
 class InsertMySqlSimulation extends Simulation {
 
-  val jdbcConfig = jdbc.url("jdbc:mysql://localhost/mysql").username("root").password("root").driver("com.mysql.jdbc.Driver")
+  val mySql = new MySQLContainer()
+  mySql.start()
+
+  val jdbcConfig = jdbc.url(mySql.getJdbcUrl).username(mySql.getUsername).password(mySql.getPassword).driver(mySql.getDriverClassName)
 
   val tableIdentFeeder = for (x <- 0 until 10) yield Map("tableId" -> x)
 
   val uniqueNumberFeeder = for (x <- 0 until 100) yield Map("unique" -> x)
+
+  after{
+    mySql.stop()
+  }
 
   val createTables = scenario("createTable").feed(tableIdentFeeder.iterator).
     exec(jdbc("create")

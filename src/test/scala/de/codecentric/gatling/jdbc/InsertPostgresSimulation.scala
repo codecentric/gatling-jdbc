@@ -2,19 +2,28 @@ package de.codecentric.gatling.jdbc
 
 import de.codecentric.gatling.jdbc.Predef._
 import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._
+import de.codecentric.gatling.jdbc.protocol.JdbcProtocol
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
+import org.testcontainers.containers.PostgreSQLContainer
 
 /**
   * Created by ronny on 10.05.17.
   */
 class InsertPostgresSimulation extends Simulation {
 
-  val jdbcConfig = jdbc.url("jdbc:postgresql://localhost/postgres").username("postgres").password("mysecretpassword").driver("org.postgresql.Driver")
+  val postgres = new PostgreSQLContainer()
+  postgres.start()
+
+  val jdbcConfig = jdbc.url(postgres.getJdbcUrl).username(postgres.getUsername).password(postgres.getPassword).driver(postgres.getDriverClassName)
 
   val tableIdentFeeder = for (x <- 0 until 10) yield Map("tableId" -> x)
 
   val uniqueNumberFeeder = for (x <- 0 until 100) yield Map("unique" -> x)
+
+  after {
+    postgres.stop()
+  }
 
   val createTables = scenario("createTable").feed(tableIdentFeeder.iterator).
     exec(jdbc("create")
