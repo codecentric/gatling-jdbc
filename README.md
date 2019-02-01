@@ -1,12 +1,17 @@
-# gatling-jdbc
+# Gatling JDBC Extension
 JDBC support for Gatling
 
 [![Build Status](https://travis-ci.org/codecentric/gatling-jdbc.svg?branch=master)](https://travis-ci.org/codecentric/gatling-jdbc)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.codecentric/gatling-jdbc_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.codecentric/gatling-jdbc_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.codecentric/jdbc-gatling_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.codecentric/jdbc-gatling_2.12)
 
 
 The JDBC extension for Gatling was originally created to accompany a blog post that shows how to extend Gatling.
 Currently, five SQL operations are being supported. See below for the usage.
+
+## :exclamation: Attention :exclamation:
+
+In order to avoid conflicts with `io.gatling:gatling-jdbc` the artifact name has been changed with version 2.0.1.
+Instead of `gatling-jdbc` it is now called `jdbc-gatling` (see issue #8). Apart from this, nothing changes. All package names etc. stayed the same.
 
 ## Usage
 
