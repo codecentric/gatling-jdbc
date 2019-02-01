@@ -38,4 +38,4 @@ pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
 publishMavenStyle := true
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
-releaseProcess += releaseStepCommand("sonatypeRelease")
+releaseProcess += releaseStepCommand("sonatypeReleaseAll")
