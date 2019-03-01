@@ -1,5 +1,7 @@
 package de.codecentric.gatling.jdbc.protocol
 
+import scalikejdbc.ConnectionPool.CPSettings
+
 /**
   * Created by ronny on 10.05.17.
   */
@@ -21,17 +23,25 @@ case class JdbcProtocolBuilderPasswordStep(url: String, username: String) {
 
 }
 
-case class JdbcProtocolBuilderDriverStep(url: String, username: String, password: String){
+case class JdbcProtocolBuilderDriverStep(url: String, username: String, password: String) {
 
   /**
     * The fully qualified name of the driver as usually loaded by Class.forName(...)
     */
-  def driver(driver: String) = JdbcProtocolBuilder(url, username, password, driver)
+  def driver(driver: String) = JdbcProtocolBuilderConnectionPoolSettingsStep(url, username, password, driver)
 
 }
 
-case class JdbcProtocolBuilder(url: String, username: String, pwd: String, driver: String) {
+case class JdbcProtocolBuilderConnectionPoolSettingsStep(url: String, username: String, password: String, driver: String) {
 
-  def build = JdbcProtocol(url, username, pwd, driver)
+  def build =  JdbcProtocol(url, username, password, driver, None)
+
+  def connectionPoolSettings(connectionPoolSettings: CPSettings) = JdbcProtocolBuilder(url, username, password, driver, connectionPoolSettings)
+
+}
+
+case class JdbcProtocolBuilder(url: String, username: String, pwd: String, driver: String, connectionPoolSettings: CPSettings) {
+
+  def build = JdbcProtocol(url, username, pwd, driver, Some(connectionPoolSettings))
 
 }

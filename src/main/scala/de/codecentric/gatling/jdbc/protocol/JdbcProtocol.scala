@@ -3,18 +3,23 @@ package de.codecentric.gatling.jdbc.protocol
 import io.gatling.core.{CoreComponents, protocol}
 import io.gatling.core.config.GatlingConfiguration
 import io.gatling.core.protocol.{Protocol, ProtocolKey}
+import scalikejdbc.ConnectionPool.CPSettings
 import scalikejdbc._
 
 /**
   * Created by ronny on 10.05.17.
   */
-class JdbcProtocol(url: String, username: String, pwd: String, driver: String) extends Protocol {
+class JdbcProtocol(url: String, username: String, pwd: String, driver: String, connectionPoolSettings: Option[CPSettings]) extends Protocol {
 
   Class.forName(driver)
 
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true)
-  ConnectionPool.singleton(url, username, pwd)
 
+  if (connectionPoolSettings.isDefined) {
+    ConnectionPool.singleton(url, username, pwd, connectionPoolSettings.get)
+  } else {
+    ConnectionPool.singleton(url, username, pwd)
+  }
 }
 
 object JdbcProtocol {
@@ -32,5 +37,6 @@ object JdbcProtocol {
 
   }
 
-  def apply(url: String, username: String, pwd: String, driver: String): JdbcProtocol = new JdbcProtocol(url, username, pwd, driver)
+  def apply(url: String, username: String, pwd: String, driver: String, connectionPoolSettings: Option[CPSettings]): JdbcProtocol =
+    new JdbcProtocol(url, username, pwd, driver, connectionPoolSettings)
 }
