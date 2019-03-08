@@ -1,4 +1,4 @@
-organization := "de.codecentric"
+organization := "dev.code_n_roll.gatling"
 name := "jdbc-gatling"
 scalaVersion := "2.12.8"
 libraryDependencies ++= Seq(
@@ -18,11 +18,11 @@ enablePlugins(GatlingPlugin)
 parallelExecution in Test := false
 
 //everything below this line is related to the project release
-homepage := Some(url("https://github.com/codecentric/gatling-jdbc"))
-scmInfo := Some(ScmInfo(url("https://github.com/codecentric/gatling-jdbc"), "git@github.com:codecentric/gatling-jdbc.git"))
+homepage := Some(url("https://github.com/rbraeunlich/gatling-jdbc"))
+scmInfo := Some(ScmInfo(url("https://github.com/rbraeunlich/gatling-jdbc"), "git@github.com:rbraeunlich/gatling-jdbc.git"))
 developers := List(Developer("rbraeunlich",
   "Ronny Bräunlich",
-  "ronny.braeunlich@codecentric.de",
+  "r.braeunlich@gmail.com",
   url("https://github.com/rbraeunlich")))
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 

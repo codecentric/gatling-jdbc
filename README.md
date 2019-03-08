@@ -1,8 +1,8 @@
 # Gatling JDBC Extension
 JDBC support for Gatling
 
-[![Build Status](https://travis-ci.org/codecentric/gatling-jdbc.svg?branch=master)](https://travis-ci.org/codecentric/gatling-jdbc)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.codecentric/jdbc-gatling_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.codecentric/jdbc-gatling_2.12)
+[![Build Status](https://travis-ci.org/rbraeunlich/gatling-jdbc.svg?branch=master)](https://travis-ci.org/rbraeunlich/gatling-jdbc)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.code_n_roll.gatling/jdbc-gatling_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.code_n_roll.gatling/jdbc-gatling_2.12)
 
 
 The JDBC extension for Gatling was originally created to accompany a blog post that shows how to extend Gatling.
@@ -16,12 +16,12 @@ Instead of `gatling-jdbc` it is now called `jdbc-gatling` (see issue #8). Apart 
 ## Usage
 
 ```scala
-libraryDependencies += "de.codecentric" %% "gatling-jdbc" % "version"
+libraryDependencies += "dev.code_n_roll.gatling" %% "gatling-jdbc" % "version"
 ```
 
 ### General
 
-In order to use the JDBC functionality, your simulation has to import `de.codecentric.gatling.jdbc.Predef._`.
+In order to use the JDBC functionality, your simulation has to import `dev.code_n_roll.gatling.jdbc.Predef._`.
 The JDBC configuration is done via `jdbc`, e.g.:
 
 ```scala
@@ -38,7 +38,7 @@ The entry point for the operations is the `jdbc()` method. The method itself tak
 ### CREATE TABLE
 
 Creating a table is done via `jdbc().create()`. In order to ease the creation of arbitrarily many columns, the helper class `
-import de.codecentric.gatling.jdbc.builder.column.ColumnHelper._` was created. It is recommended to use it. The datatype of every column has to be provided as a string.
+import dev.code_n_roll.gatling.jdbc.builder.column.ColumnHelper._` was created. It is recommended to use it. The datatype of every column has to be provided as a string.
 Additionally, constraints are optional, but also have to be passed as strings. E.g.:
 ```scala
 scenario("createTable").
@@ -129,7 +129,7 @@ jdbc("drop bar table").drop().table("bar")
 
 ### Checks
 
-Currently, checks are only implemented for SELECT. When importing `de.codecentric.gatling.jdbc.Predef._` two types of checks are provided.
+Currently, checks are only implemented for SELECT. When importing `dev.code_n_roll.gatling.jdbc.Predef._` two types of checks are provided.
 The first type is the SimpleCheck.
 
 #### SimpleCheck
