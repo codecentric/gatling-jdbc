@@ -13,6 +13,9 @@ Currently, five SQL operations are being supported. See below for the usage.
 In order to avoid conflicts with `io.gatling:gatling-jdbc` the artifact name has been changed with version 2.0.1.
 Instead of `gatling-jdbc` it is now called `jdbc-gatling` (see issue #8). Apart from this, nothing changes. All package names etc. stayed the same.
 
+Also, by forking it from it's original position the group id and the packages have changed!
+The correct import is now `dev.code_n_roll.gatling....` and the group id changed to `dev.code_n_roll.gatling`.
+
 ## Usage
 
 ```scala
@@ -208,3 +211,8 @@ Secondly, open the sbt shell an perform the following steps:
 
 If you have to run Docker on your machine as sudo, then to execute the integration tests, sbt has to be started as sudo, too.
 Only `sudo sbt gatling:test` will then be allowed to start the container of the databases.
+
+## Acknowledgements
+
+I'd like to thank my former employer [codecentric](https://github.com/codecentric) for providing me the time and space to
+get started on this project and transform it to a publishable library.
