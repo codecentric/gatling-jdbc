@@ -8,6 +8,11 @@ JDBC support for Gatling
 The JDBC extension for Gatling was originally created to accompany a blog post that shows how to extend Gatling.
 Currently, five SQL operations are being supported. See below for the usage.
 
+## :exclamation::exclamation: Even more Attention :exclamation::exclamation:
+
+The development of this project continues in [this fork](https://github.com/rbraeunlich/gatling-jdbc).
+Please refrain from cloning/forking this repository or creating issue. Please use the other one!
+
 ## :exclamation: Attention :exclamation:
 
 In order to avoid conflicts with `io.gatling:gatling-jdbc` the artifact name has been changed with version 2.0.1.
