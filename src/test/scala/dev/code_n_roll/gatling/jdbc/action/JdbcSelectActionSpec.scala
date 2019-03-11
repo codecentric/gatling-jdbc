@@ -17,7 +17,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
   "JdbcSelectAction" should "use the request name in the log message" in {
     val requestName = "simulation"
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction(requestName, "*", "table", None, List.empty, clock, statsEngine, next)
+    val action = JdbcSelectAction(requestName, "*", "table", None, List.empty, _.toMap(), clock, statsEngine, next)
 
     action.execute(session)
 
@@ -31,7 +31,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE selection(id INTEGER PRIMARY KEY ); INSERT INTO SELECTION VALUES (1);INSERT INTO SELECTION VALUES (2)""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "SELECTION", None, List(simpleCheck(list => list.length == 2)), clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "SELECTION", None, List(simpleCheck(list => list.length == 2)), _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -45,7 +45,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE limited(id INTEGER PRIMARY KEY ); INSERT INTO LIMITED VALUES (1);INSERT INTO LIMITED VALUES (2)""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "LIMITED", Some("id=2"), List(simpleCheck(list => list.length == 1)), clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "LIMITED", Some("id=2"), List(simpleCheck(list => list.length == 1)), _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -59,7 +59,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE success(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "SUCCESS", None, List.empty, clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "SUCCESS", None, List.empty, _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -70,7 +70,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
 
   it should "log an KO value after unsuccessful selection" in {
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "failure", None, List.empty, clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "failure", None, List.empty, _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -84,7 +84,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE checkTable(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "CHECKTABLE", None, List(simpleCheck(_ => false)), clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "CHECKTABLE", None, List(simpleCheck(_ => false)), _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -98,7 +98,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE check_again(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction("request", "*", "CHECK_AGAIN", None, List(simpleCheck(_ => true)), clock, statsEngine, latchAction)
+    val action = JdbcSelectAction("request", "*", "CHECK_AGAIN", None, List(simpleCheck(_ => true)), _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
@@ -108,19 +108,19 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
   }
 
   it should "throw an IAE when it cannot evaluate the what expression" in {
-    val action = JdbcSelectAction("request", "${what}", "table", None, List(simpleCheck(_ => true)), clock, statsEngine, next)
+    val action = JdbcSelectAction("request", "${what}", "table", None, List(simpleCheck(_ => true)), _.toMap(), clock, statsEngine, next)
 
     an[IllegalArgumentException] should be thrownBy action.execute(session)
   }
 
   it should "throw an IAE when it cannot evaluate the from expression" in {
-    val action = JdbcSelectAction("request", "*", "${from}", None, List(simpleCheck(_ => true)), clock, statsEngine, next)
+    val action = JdbcSelectAction("request", "*", "${from}", None, List(simpleCheck(_ => true)), _.toMap(), clock, statsEngine, next)
 
     an[IllegalArgumentException] should be thrownBy action.execute(session)
   }
 
   it should "throw an IAE when it cannot evaluate the where expression" in {
-    val action = JdbcSelectAction("request", "*", "table", Some("${where}"), List(simpleCheck(_ => true)), clock, statsEngine, next)
+    val action = JdbcSelectAction("request", "*", "table", Some("${where}"), List(simpleCheck(_ => true)), _.toMap(), clock, statsEngine, next)
 
     an[IllegalArgumentException] should be thrownBy action.execute(session)
   }
@@ -130,7 +130,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE insert_next(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val nextAction = NextAction(session)
-    val action = JdbcSelectAction("request", "*", "INSERT_NEXT", None, List(simpleCheck(_ => true)), clock, statsEngine, nextAction)
+    val action = JdbcSelectAction("request", "*", "INSERT_NEXT", None, List(simpleCheck(_ => true)), _.toMap(), clock, statsEngine, nextAction)
 
     action.execute(session)
 
@@ -143,11 +143,40 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       sql"""CREATE TABLE crashes(id INTEGER PRIMARY KEY )""".execute().apply()
     }
     val nextAction = NextAction(session.markAsFailed)
-    val action = JdbcSelectAction("request", "*", "CRASHES", None, List(simpleCheck(_ => throw new RuntimeException("Test error"))), clock, statsEngine, nextAction)
+    val action = JdbcSelectAction("request", "*", "CRASHES", None, List(simpleCheck(_ => throw new RuntimeException("Test error"))), _.toMap(), clock, statsEngine, nextAction)
 
     action.execute(session)
 
     waitForLatch(nextAction)
     nextAction.called should be(true)
   }
+
+  it should "apply the map function to the selection and store it in the session" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE mapping(id INTEGER PRIMARY KEY ); INSERT INTO mapping VALUES (1);""".execute().apply()
+    }
+    val nextAction = new BlockingLatchAction() {
+      override def execute(session: Session): Unit = {
+        super.execute(session)
+        session("value").as[Mapping] shouldEqual Mapping(1)
+      }
+    }
+    val action: JdbcSelectAction[Mapping] = JdbcSelectAction(
+      "request",
+      "*",
+      "MAPPING",
+      None,
+      List(jdbcSingleResponse[Mapping].is(Mapping(1)).saveAs("value")),
+      rs => Mapping(rs.int(0)),
+      clock,
+      statsEngine,
+      nextAction)
+
+    action.execute(session)
+
+    waitForLatch(nextAction)
+  }
+
+  case class Mapping(id: Int)
+
 }

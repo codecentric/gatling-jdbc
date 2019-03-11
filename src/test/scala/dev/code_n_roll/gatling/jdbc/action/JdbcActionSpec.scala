@@ -24,7 +24,7 @@ trait JdbcActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll
 
   override def beforeAll(): Unit = {
     Class.forName("org.h2.Driver")
-    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true)
+    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true, logLevel = 'warn)
     ConnectionPool.singleton("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE", "sa", "sa")
   }
 

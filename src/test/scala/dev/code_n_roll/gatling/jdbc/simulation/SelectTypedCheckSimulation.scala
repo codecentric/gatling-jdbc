@@ -8,7 +8,7 @@ import io.gatling.core.scenario.Simulation
 /**
   * Created by ronny on 10.05.17.
   */
-class SelectAnyCheckSimulation extends Simulation {
+class SelectTypedCheckSimulation extends Simulation {
 
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
 
@@ -38,7 +38,8 @@ class SelectAnyCheckSimulation extends Simulation {
       .select("*")
       .from("bar")
       .where("abc=4")
-      .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4))
+      .mapResult(rs => Stored(rs.int(0), rs.int(1)))
+      .check(jdbcSingleResponse[Stored].is(Stored(4,4))
         .saveAs("myResult"))
     ).pause(1).
     exec(jdbc("selectionManyCheck")
@@ -58,3 +59,5 @@ class SelectAnyCheckSimulation extends Simulation {
     .assertions(global.failedRequests.count.is(0))
 
 }
+
+case class Stored(abc: Int, foo: Int)

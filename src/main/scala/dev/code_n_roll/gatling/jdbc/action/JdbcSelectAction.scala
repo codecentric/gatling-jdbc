@@ -8,7 +8,7 @@ import io.gatling.core.action.Action
 import io.gatling.core.check.Check
 import io.gatling.core.session.{Expression, Session}
 import io.gatling.core.stats.StatsEngine
-import scalikejdbc.{DB, SQL}
+import scalikejdbc.{DB, SQL, WrappedResultSet}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -17,11 +17,12 @@ import scala.util.{Failure, Try}
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcSelectAction(requestName: Expression[String],
+case class JdbcSelectAction[T](requestName: Expression[String],
                             what: Expression[String],
                             from: Expression[String],
                             where: Option[Expression[String]],
                             checks: List[JdbcCheck],
+                            mapFunction: WrappedResultSet => T,
                             clock: Clock,
                             statsEngine: StatsEngine,
                             next: Action) extends JdbcAction {
