@@ -37,8 +37,8 @@ trait JdbcActionSpec extends FlatSpec with BeforeAndAfter with BeforeAndAfterAll
   }
 
 
-  def waitForLatch(latchAction: BlockingLatchAction): Boolean = {
-    latchAction.latch.await(2L, TimeUnit.SECONDS)
+  def waitForLatch(latchAction: BlockingLatchAction): Unit = {
+    latchAction.latch.await(2L, TimeUnit.SECONDS) shouldBe true
   }
 }
 

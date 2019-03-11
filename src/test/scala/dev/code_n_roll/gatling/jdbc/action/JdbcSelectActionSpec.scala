@@ -157,8 +157,8 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
     }
     val nextAction = new BlockingLatchAction() {
       override def execute(session: Session): Unit = {
-        super.execute(session)
         session("value").as[Mapping] shouldEqual Mapping(1)
+        super.execute(session)
       }
     }
     val action: JdbcSelectAction[Mapping] = JdbcSelectAction(
