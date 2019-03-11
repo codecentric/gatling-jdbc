@@ -4,6 +4,7 @@ import dev.code_n_roll.gatling.jdbc.Predef._
 import dev.code_n_roll.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
+import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 
 import scala.concurrent.duration._
 import scala.util.Random
@@ -15,6 +16,8 @@ class InsertSimulation extends Simulation {
 
   val jdbcConfig = jdbc.url("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE").username("sa").password("sa").driver("org.h2.Driver")
   val feeder = Iterator.continually(Map("rand" -> (Random.alphanumeric.take(20).mkString + "@foo.com")))
+
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true, logLevel = 'warn)
 
   val createTable = scenario("create table")
     .exec(jdbc("bar table")

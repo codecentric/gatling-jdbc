@@ -5,6 +5,7 @@ import dev.code_n_roll.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
 import io.gatling.core.scenario.Simulation
 import org.testcontainers.containers.PostgreSQLContainer
+import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 
 /**
   * Created by ronny on 10.05.17.
@@ -15,6 +16,8 @@ class InsertPostgresSimulation extends Simulation {
   postgres.start()
 
   val jdbcConfig = jdbc.url(postgres.getJdbcUrl).username(postgres.getUsername).password(postgres.getPassword).driver(postgres.getDriverClassName)
+
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(singleLineMode = true, logLevel = 'warn)
 
   val tableIdentFeeder = for (x <- 0 until 10) yield Map("tableId" -> x)
 
