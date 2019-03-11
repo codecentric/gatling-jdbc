@@ -166,7 +166,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       "*",
       "MAPPING",
       None,
-      List(jdbcSingleResponse[Mapping].is(Mapping(1)).saveAs("value")),
+      List(singleResponse[Mapping].is(Mapping(1)).saveAs("value")),
       rs => Mapping(rs.int(0)),
       clock,
       statsEngine,

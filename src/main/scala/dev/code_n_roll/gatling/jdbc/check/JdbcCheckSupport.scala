@@ -13,9 +13,9 @@ trait JdbcCheckSupport {
 
   def simpleCheck = JdbcSimpleCheck
 
-  val jdbcSingleResponse = jdbcSingleResponse[Map[String, Any]]
+  val jdbcSingleResponse = singleResponse[Map[String, Any]]
 
-  def jdbcSingleResponse[T]: DefaultFindCheckBuilder[JdbcSingleTCheck.JdbcSingleTCheckType, Map[String, Any], T] = JdbcSingleTCheck.singleTResult[T]
+  def singleResponse[T]: DefaultFindCheckBuilder[JdbcSingleTCheck.JdbcSingleTCheckType, Map[String, Any], T] = JdbcSingleTCheck.singleTResult[T]
 
   implicit def jdbcSingleAnyCheckMaterializer[T]: CheckMaterializer[JdbcSingleTCheck.JdbcSingleTCheckType, JdbcCheck, ManyAnyResult, T] = JdbcSingleTCheck.singleTCheckMaterializer[T]
 

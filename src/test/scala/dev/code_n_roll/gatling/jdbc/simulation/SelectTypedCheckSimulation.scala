@@ -39,7 +39,7 @@ class SelectTypedCheckSimulation extends Simulation {
       .from("bar")
       .where("abc=4")
       .mapResult(rs => Stored(rs.int(0), rs.int(1)))
-      .check(jdbcSingleResponse[Stored].is(Stored(4,4))
+      .check(singleResponse[Stored].is(Stored(4,4))
         .saveAs("myResult"))
     ).pause(1).
     exec(jdbc("selectionManyCheck")
