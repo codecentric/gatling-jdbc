@@ -1,5 +1,7 @@
 package dev.code_n_roll.gatling.jdbc.simulation
 
+import java.util.UUID
+
 import dev.code_n_roll.gatling.jdbc.Predef._
 import dev.code_n_roll.gatling.jdbc.builder.column.ColumnHelper._
 import io.gatling.core.Predef._
@@ -21,7 +23,7 @@ class InsertMySqlSimulation extends Simulation {
 
   val tableIdentFeeder = for (x <- 0 until 10) yield Map("tableId" -> x)
 
-  val uniqueNumberFeeder = for (x <- 0 until 100) yield Map("unique" -> x)
+  val uniqueValuesFeeder = Iterator.continually(Map("unique" -> UUID.randomUUID()))
 
   after {
     mySql.stop()
@@ -34,18 +36,18 @@ class InsertMySqlSimulation extends Simulation {
       .columns(
         column(
           name("abc"),
-          dataType("INTEGER"),
+          dataType("VARCHAR(39)"),
           constraint("PRIMARY KEY")
         )
       )
     )
 
-  val fillTables = feed(uniqueNumberFeeder).repeat(100, "n") {
+  val fillTables = feed(uniqueValuesFeeder).repeat(100, "n") {
     feed(tableIdentFeeder.iterator.toArray.random).
       exec(jdbc("insertion")
         .insert()
         .into("bar${tableId}")
-        .values("${unique}${n}")
+        .values("'${unique}${n}'")
       )
   }
 
