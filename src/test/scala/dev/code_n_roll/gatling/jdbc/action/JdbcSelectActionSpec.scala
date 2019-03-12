@@ -1,5 +1,6 @@
 package dev.code_n_roll.gatling.jdbc.action
 
+import dev.code_n_roll.gatling.jdbc.JdbcCheck
 import io.gatling.commons.stats.{KO, OK}
 import io.gatling.core.Predef._
 import io.gatling.core.stats.writer.ResponseMessage

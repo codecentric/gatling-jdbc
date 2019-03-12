@@ -1,10 +1,12 @@
 package dev.code_n_roll.gatling.jdbc.check
 
+import java.util
+
 import dev.code_n_roll.gatling.jdbc.JdbcCheck
 import dev.code_n_roll.gatling.jdbc.Predef.ManyAnyResult
 import io.gatling.commons.validation.{Validation, _}
 import io.gatling.core.check.extractor.{Extractor, FindAllArity}
-import io.gatling.core.check.{CheckMaterializer, DefaultFindCheckBuilder, Preparer, Specializer}
+import io.gatling.core.check._
 import io.gatling.core.session.{Expression, _}
 
 object JdbcManyAnyCheck {
@@ -13,10 +15,10 @@ object JdbcManyAnyCheck {
 
   val ManyAnyPreparer: Preparer[ManyAnyResult, ManyAnyResult] = something => something.success
 
-  val ManyAnyCheckMaterializer: CheckMaterializer[JdbcManyAnyCheckType, JdbcCheck, ManyAnyResult, ManyAnyResult] = new CheckMaterializer[JdbcManyAnyCheckType, JdbcCheck, ManyAnyResult, ManyAnyResult] {
+  val ManyAnyCheckMaterializer: CheckMaterializer[JdbcManyAnyCheckType, JdbcCheck[Map[String, Any]], ManyAnyResult, ManyAnyResult] = new CheckMaterializer[JdbcManyAnyCheckType, JdbcCheck[Map[String, Any]], ManyAnyResult, ManyAnyResult] {
     override protected def preparer: Preparer[ManyAnyResult, ManyAnyResult] = ManyAnyPreparer
 
-    override protected def specializer: Specializer[JdbcCheck, ManyAnyResult] = identity
+    override protected def specializer: Specializer[JdbcCheck[Map[String, Any]], ManyAnyResult] = identity
   }
 
   val ManyAnyExtractor: Expression[Extractor[ManyAnyResult, ManyAnyResult] with FindAllArity] =
@@ -30,5 +32,4 @@ object JdbcManyAnyCheck {
     ManyAnyExtractor,
     displayActualValue = true
   )
-
 }

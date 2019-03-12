@@ -21,7 +21,7 @@ case class JdbcSelectAction[T](requestName: Expression[String],
                             what: Expression[String],
                             from: Expression[String],
                             where: Option[Expression[String]],
-                            checks: List[JdbcCheck],
+                            checks: List[JdbcCheck[T]],
                             mapFunction: WrappedResultSet => T,
                             clock: Clock,
                             statsEngine: StatsEngine,
@@ -41,9 +41,9 @@ case class JdbcSelectAction[T](requestName: Expression[String],
       case _ => throw new IllegalArgumentException
     }
 
-    val future: Future[List[Map[String, Any]]] = Future {
+    val future: Future[List[T]] = Future {
       DB autoCommit { implicit session =>
-        SQL(sqlString).map(rs => rs.toMap()).toList().apply()
+        SQL(sqlString).map(mapFunction).toList().apply()
       }
     }
     future.onComplete {
@@ -60,8 +60,8 @@ case class JdbcSelectAction[T](requestName: Expression[String],
     }
   }
 
-  private def performChecks(session: Session, start: Long, tried: List[Map[String, Any]]): Session = {
-    val (modifiedSession, error) = Check.check(tried, session, checks)
+  private def performChecks(session: Session, start: Long, tried: List[T]): Session = {
+    val (modifiedSession, error) = Check.check[List[T]](tried, session, checks)
     error match {
       case Some(failure) =>
         requestName.apply(session).map { resolvedRequestName =>

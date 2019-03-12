@@ -10,7 +10,7 @@ import scalikejdbc.WrappedResultSet
 /**
   * Created by ronny on 11.05.17.
   */
-case class JdbcSelectionWithoutWhereActionBuilder(requestName: Expression[String], what: Expression[String], from: Expression[String]) extends JdbcCheckActionBuilder {
+case class JdbcSelectionWithoutWhereActionBuilder(requestName: Expression[String], what: Expression[String], from: Expression[String]) extends JdbcCheckActionBuilder[Map[String, Any]] {
 
   def where(where: Expression[String]) = JdbcSelectionWithWhereActionBuilder(requestName, what, from, where)
 
@@ -24,7 +24,7 @@ case class JdbcSelectionWithoutWhereActionBuilder(requestName: Expression[String
 
 }
 
-case class JdbcSelectionWithWhereActionBuilder(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Expression[String]) extends JdbcCheckActionBuilder {
+case class JdbcSelectionWithWhereActionBuilder(requestName: Expression[String], what: Expression[String], from: Expression[String], where: Expression[String]) extends JdbcCheckActionBuilder[Map[String, Any]] {
 
   def mapResult[T](mapFunction: WrappedResultSet => T) = JdbcSelectionWithMappingActionBuilder(requestName, what, from, Some(where), mapFunction)
 
@@ -40,7 +40,7 @@ case class JdbcSelectionWithMappingActionBuilder[T](requestName: Expression[Stri
                                                     what: Expression[String],
                                                     from: Expression[String],
                                                     where: Option[Expression[String]],
-                                                    mapFunction: WrappedResultSet => T) extends JdbcCheckActionBuilder {
+                                                    mapFunction: WrappedResultSet => T) extends JdbcCheckActionBuilder[T] {
 
   override def build(ctx: ScenarioContext, next: Action): Action = {
     val statsEngine = ctx.coreComponents.statsEngine

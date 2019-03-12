@@ -8,11 +8,11 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by ronny on 15.05.17.
   */
-trait JdbcCheckActionBuilder extends ActionBuilder {
+trait JdbcCheckActionBuilder[T] extends ActionBuilder {
 
-  protected val checks: ArrayBuffer[JdbcCheck] = ArrayBuffer.empty
+  protected val checks: ArrayBuffer[JdbcCheck[T]] = ArrayBuffer.empty
 
-  def check(check: JdbcCheck): ActionBuilder = {
+  def check(check: JdbcCheck[T]): ActionBuilder = {
     checks += check
     this
   }
