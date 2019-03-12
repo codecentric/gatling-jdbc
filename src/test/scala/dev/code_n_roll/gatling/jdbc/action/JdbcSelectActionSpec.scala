@@ -16,15 +16,29 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
   private val clock = new DefaultClock
 
   "JdbcSelectAction" should "use the request name in the log message" in {
+    DB autoCommit { implicit session =>
+      sql"""CREATE TABLE test_table(id INTEGER PRIMARY KEY );""".execute().apply()
+    }
     val requestName = "simulation"
     val latchAction = BlockingLatchAction()
-    val action = JdbcSelectAction(requestName, "*", "table", None, List.empty, _.toMap(), clock, statsEngine, next)
+    val action = JdbcSelectAction(requestName, "*", "test_table", None, List.empty, _.toMap(), clock, statsEngine, latchAction)
 
     action.execute(session)
 
     waitForLatch(latchAction)
     statsEngine.dataWriterMsg should have length 1
     statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].name should equal(requestName)
+  }
+
+  it should "add the exception message to the log message" in {
+    val latchAction = BlockingLatchAction()
+    val action = JdbcSelectAction("simulation", "*", "non-existing-table", None, List.empty, _.toMap(), clock, statsEngine, latchAction)
+
+    action.execute(session)
+
+    waitForLatch(latchAction)
+    statsEngine.dataWriterMsg should have length 1
+    statsEngine.dataWriterMsg.head(session).toOption.get.asInstanceOf[ResponseMessage].message shouldNot be(empty)
   }
 
   it should "select all values without where clause" in {
@@ -168,7 +182,7 @@ class JdbcSelectActionSpec extends JdbcActionSpec {
       "MAPPING",
       None,
       List(singleResponse[Mapping].is(Mapping(1)).saveAs("value")),
-      rs => Mapping(rs.int(0)),
+      rs => Mapping(rs.int("id")),
       clock,
       statsEngine,
       nextAction)
