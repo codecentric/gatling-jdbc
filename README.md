@@ -154,22 +154,37 @@ There is also another type of check that is more closely integrated with Gatling
 #### CheckBuilder
 
 `CheckBuilder` is actually a class provided by Gatling. Based on the Gatling classes, Gatling JDBC provides two types of them.
-The `JdbcAnyCheckBuilder` object contains the instances `SingleAnyResult` and `ManyAnyResults`. Both can be used in the tests quickly by calling either `jdbcSingleResponse` or `jdbcManyResponse`.
+The two types are basically `JdbcSingeTCheck` and `JdbcManyTCheck`. As the names suggest, both options allow to use the concrete types of the expected response.
+To use them, you have to use the methods `singleResponse[T]` or `manyResponse[T]`.
+For compatibility reasons there are also the fields `jdbcSingleResponse` and `jdbcManyResponse` which set the type to a `Map[String, Any]`.
+The methods and the fields are in scope when importing the complete Predef objects.
 
-The difference between the two is that the single response extracts the head out of the list of results. So you can only verify a `Map[String, Any]`.
-Whereas the many response, like the simple checks, returns a `List[Map[String, Any]]`. Validation is performed via the Gatling API.
-E.g. checking a single result can look like this:
+The difference between `singleResponse` and `manyResponse` is that the former extracts the head out of the list of results. So you can only verify a single object.
+Whereas the many response, like the simple checks, a `List[T]` is returned. Validation is performed via the Gatling API.
+Checking a single result in the untyped way can look like this:
 ```scala
 exec(jdbc("selectionSingleCheck")
   .select("*")
   .from("bar")
   .where("abc=4")
-  .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4)))
+  .check(jdbcSingleResponse.is(("ABC" -> 4, "FOO" -> 4)))
 )
 ```
 This validates the data in the two columns "ABC" and "FOO". Please note explicit typing of the map. Without it the compiler will complain.
+If you want to use the typed API, you have to provide a function that defines the mapping:
+```scala
+case class Stored(abc: Int, foo: Int)
+...
+exec(jdbc("selectionSingleCheck")
+      .select("*")
+      .from("bar")
+      .where("abc=4")
+      .mapResult(rs => Stored(rs.int("abc"), rs.int("foo")))
+      .check(singleResponse[Stored].is(Stored(4, 4))
+    ).pause(1)
 
-A check with multiple results doesn't look very different:
+```
+For checking multiple results we can again use the deprecated, untyped way:
 ```scala
 exec(jdbc("selectionManyCheck")
   .select("*")
@@ -181,6 +196,21 @@ exec(jdbc("selectionManyCheck")
   )
 )
 ```
+Or use the typed API:
+```scala
+case class Stored(abc: Int, foo: Int)
+...
+exec(jdbc("selectionManyCheck")
+  .select("*")
+  .from("bar")
+  .where("abc=4 OR abc=5")
+  .mapResult(rs => Stored(rs.int("abc"), rs.int("foo")))
+  .check(manyResponse[Stored].is(List(
+    Stored(4, 4),
+    Stored(5, 5)))
+  )
+```
+Please note that the map function defines the mapping for a single result. You don't have to map the result set into a List of your objects.
 
 The advantage those CheckBuilder provide is that they can access certain functionality provided by the Gatling interfaces and classes they extend.
 The most important one is the possibility to save the result of a selection to the current session.
@@ -190,7 +220,7 @@ exec(jdbc("selectionSingleCheckSaving")
   .select("*")
   .from("bar")
   .where("abc=4")
-  .check(jdbcSingleResponse.is(Map[String, Any]("ABC" -> 4, "FOO" -> 4))
+  .check(singleResponse.is(("ABC" -> 4, "FOO" -> 4))
   .saveAs("myResult"))
 )
 ```
