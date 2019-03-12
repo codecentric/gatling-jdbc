@@ -5,6 +5,7 @@ package dev.code_n_roll.gatling.jdbc
   */
 object Predef extends JdbcDsl {
 
+  @Deprecated
   type ManyAnyResult = List[Map[String, Any]]
 
 }

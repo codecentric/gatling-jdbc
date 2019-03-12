@@ -42,16 +42,17 @@ class SelectTypedCheckSimulation extends Simulation {
       .from("bar")
       .where("abc=4")
       .mapResult(rs => Stored(rs.int("abc"), rs.int("foo")))
-      .check(singleResponse[Stored].is(Stored(4,4))
+      .check(singleResponse[Stored].is(Stored(4, 4))
         .saveAs("myResult"))
     ).pause(1).
     exec(jdbc("selectionManyCheck")
       .select("*")
       .from("bar")
       .where("abc=4 OR abc=5")
-      .check(jdbcManyResponse.is(List(
-        Map("ABC" -> 4, "FOO" -> 4),
-        Map("ABC" -> 5, "FOO" -> 5)))
+      .mapResult(rs => Stored(rs.int("abc"), rs.int("foo")))
+      .check(manyResponse[Stored].is(List(
+        Stored(4, 4),
+        Stored(5, 5)))
       )
     )
   //.exec(session => session("something").as[List[Map[String, Any]]])

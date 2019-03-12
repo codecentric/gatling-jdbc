@@ -13,7 +13,7 @@ object JdbcSingleTCheck {
 
   trait JdbcSingleTCheckType
 
-  def singleTPreparer[T]: Preparer[List[T], T] = something => something.head.asInstanceOf[T].success
+  def singleTPreparer[T]: Preparer[List[T], T] = something => something.head.success
 
   def singleTCheckMaterializer[T]: CheckMaterializer[JdbcSingleTCheckType, JdbcCheck[T], List[T], T] = new CheckMaterializer[JdbcSingleTCheckType, JdbcCheck[T], List[T], T] {
     override protected def preparer: Preparer[List[T], T] = singleTPreparer[T]
@@ -23,7 +23,7 @@ object JdbcSingleTCheck {
 
   def singleTExtractor[T]: Expression[Extractor[T, T] with SingleArity] =
     new Extractor[T, T] with SingleArity {
-      override def name: String = "singleAny"
+      override def name: String = "singleT"
 
       override def apply(prepared: T): Validation[Option[T]] = Some(prepared).success
     }.expressionSuccess
