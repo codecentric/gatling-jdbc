@@ -1,4 +1,4 @@
-organization := "dev.code_n_roll.gatling"
+organization := "dev.code-n-roll.gatling"
 name := "jdbc-gatling"
 scalaVersion := "2.12.8"
 libraryDependencies ++= Seq(

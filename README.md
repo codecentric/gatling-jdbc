@@ -14,7 +14,7 @@ In order to avoid conflicts with `io.gatling:gatling-jdbc` the artifact name has
 Instead of `gatling-jdbc` it is now called `jdbc-gatling` (see issue #8). Apart from this, nothing changes. All package names etc. stayed the same.
 
 Also, by forking it from it's original position the group id and the packages have changed!
-The correct import is now `dev.code_n_roll.gatling....` and the group id changed to `dev.code_n_roll.gatling`.
+The correct import is now `dev.code_n_roll.gatling....` and the group id changed to `dev.code-n-roll.gatling`.
 
 ## Usage
 
