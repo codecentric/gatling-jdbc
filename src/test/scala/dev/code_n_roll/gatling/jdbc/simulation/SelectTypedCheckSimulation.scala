@@ -41,7 +41,7 @@ class SelectTypedCheckSimulation extends Simulation {
       .select("*")
       .from("bar")
       .where("abc=4")
-      .mapResult(rs => Stored(rs.int(0), rs.int(1)))
+      .mapResult(rs => Stored(rs.int("abc"), rs.int("foo")))
       .check(singleResponse[Stored].is(Stored(4,4))
         .saveAs("myResult"))
     ).pause(1).
