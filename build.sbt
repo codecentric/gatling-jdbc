@@ -34,6 +34,7 @@ publishTo := Some(
     Opts.resolver.sonatypeStaging
 )
 
+sonatypeProfileName := "r.braeunlich"
 pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
 publishMavenStyle := true
