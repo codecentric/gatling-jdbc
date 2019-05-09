@@ -14,7 +14,7 @@ import scala.util.Try
   */
 trait JdbcAction extends ChainableAction with NameGen {
 
-  def log(start: Long, end: Long, tried: Try[_], requestName: Expression[String], session: Session, statsEngine: StatsEngine): Unit = {
+  def log(start: Long, end: Long, tried: Try[_], requestName: Expression[String], session: Session, statsEngine: StatsEngine): Session = {
     val (status, message) = tried match {
       case scala.util.Success(_) => (OK, None)
       case scala.util.Failure(exception) => (KO, Some(exception.getMessage))
@@ -22,5 +22,6 @@ trait JdbcAction extends ChainableAction with NameGen {
     requestName.apply(session).foreach { resolvedRequestName =>
       statsEngine.logResponse(session, resolvedRequestName, start, end, status, None, message)
     }
+    session.logGroupRequest(start, end, status)
   }
 }

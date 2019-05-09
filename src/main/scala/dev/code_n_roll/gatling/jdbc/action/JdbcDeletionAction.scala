@@ -41,8 +41,7 @@ case class JdbcDeletionAction(requestName: Expression[String],
       }
 
     result.foreach(_.onComplete(result => {
-      log(start, clock.nowMillis, result, requestName, session, statsEngine)
-      next ! session
+      next ! log(start, clock.nowMillis, result, requestName, session, statsEngine)
     }))
 
     result.onFailure(e => throw new IllegalArgumentException(e))

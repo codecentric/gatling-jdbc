@@ -33,8 +33,7 @@ case class JdbcDropTableAction(requestName: Expression[String],
           }
         }
         future.onComplete(result => {
-          log(start, clock.nowMillis, result, requestName, session, statsEngine)
-          next ! session
+          next ! log(start, clock.nowMillis, result, requestName, session, statsEngine)
         })
 
       case Failure(error) => throw new IllegalArgumentException(error)

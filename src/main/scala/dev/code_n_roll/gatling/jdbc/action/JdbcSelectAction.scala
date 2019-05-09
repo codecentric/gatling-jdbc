@@ -55,8 +55,7 @@ case class JdbcSelectAction[T](requestName: Expression[String],
             session.markAsFailed
         }.get
       case fail: Failure[_] =>
-        log(start, clock.nowMillis, fail, requestName, session, statsEngine)
-        next ! session
+        next ! log(start, clock.nowMillis, fail, requestName, session, statsEngine)
     }
   }
 
@@ -69,8 +68,7 @@ case class JdbcSelectAction[T](requestName: Expression[String],
         }
         modifiedSession.markAsFailed
       case _ =>
-        log(start, clock.nowMillis, scala.util.Success(""), requestName, session, statsEngine)
-        modifiedSession
+        log(start, clock.nowMillis, scala.util.Success(""), requestName, modifiedSession, statsEngine)
     }
   }
 }
