@@ -60,7 +60,7 @@ case class JdbcSelectAction[T](requestName: Expression[String],
   }
 
   private def performChecks(session: Session, start: Long, tried: List[T]): Session = {
-    val (modifiedSession, error) = Check.check[List[T]](tried, session, checks)
+    val (modifiedSession, error) = Check.check[List[T]](tried, session, checks, null)
     error match {
       case Some(failure) =>
         requestName.apply(session).map { resolvedRequestName =>

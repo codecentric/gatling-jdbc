@@ -2,9 +2,9 @@ organization := "dev.code-n-roll.gatling"
 name := "jdbc-gatling"
 scalaVersion := "2.12.8"
 libraryDependencies ++= Seq(
-  "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.0.3",
-  "io.gatling"            % "gatling-test-framework"    % "3.0.3",
-  "org.scalikejdbc"       %% "scalikejdbc"              % "3.3.2",
+  "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.2.1",
+  "io.gatling"            % "gatling-test-framework"    % "3.2.1",
+  "org.scalikejdbc"       %% "scalikejdbc"              % "3.3.5",
   "com.h2database"        % "h2"                        % "1.4.198",
   "ch.qos.logback"        % "logback-classic"           % "1.2.3",
   "mysql"                 % "mysql-connector-java"      % "8.0.15"  % "test",

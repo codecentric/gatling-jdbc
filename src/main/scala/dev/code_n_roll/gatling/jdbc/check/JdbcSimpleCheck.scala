@@ -15,7 +15,7 @@ import scala.collection.mutable
   * Created by ronny on 15.05.17.
   */
 case class JdbcSimpleCheck(func: List[Map[String, Any]] => Boolean) extends JdbcCheck[Map[String, Any]] {
-  override def check(response: List[Map[String, Any]], session: Session)(implicit preparedCache: util.Map[Any, Any]): Validation[CheckResult] = {
+  override def check(response: List[Map[String, Any]], session: Session, preparedCache: util.Map[Any, Any]): Validation[CheckResult] = {
     if (func(response)) {
       CheckResult.NoopCheckResultSuccess
     } else {

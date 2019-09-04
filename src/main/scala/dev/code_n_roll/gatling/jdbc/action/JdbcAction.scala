@@ -22,6 +22,6 @@ trait JdbcAction extends ChainableAction with NameGen {
     requestName.apply(session).foreach { resolvedRequestName =>
       statsEngine.logResponse(session, resolvedRequestName, start, end, status, None, message)
     }
-    session.logGroupRequest(start, end, status)
+    session.logGroupRequestTimings(start, end)
   }
 }
