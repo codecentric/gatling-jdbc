@@ -38,5 +38,7 @@ sonatypeProfileName := "r.braeunlich"
 pomIncludeRepository := { _ => false }
 publishArtifact in Test := false
 publishMavenStyle := true
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
+publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 releaseProcess += releaseStepCommand("sonatypeReleaseAll")
